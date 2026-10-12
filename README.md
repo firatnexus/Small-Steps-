@@ -15,7 +15,7 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 <br/>
 
-[![Try It Online](https://img.shields.io/badge/🌐%20Live%20Demo-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+[![Try It Online](https://img.shields.io/badge/🌐%20Try%20It%20Online-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
 
 <br/>
 
@@ -27,11 +27,11 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 ## 📖 Table of Contents
 
-[Live Demo](#-live-demo) · [Features](#-features) · [Usage](#-usage) · [Languages](#-languages) · [Architecture](#-architecture) · [Project Structure](#-project-structure) · [Customization](#️-customization) · [Data Storage](#-data-storage) · [Browser Support](#-browser-support) · [FAQ](#-faq) · [Contributing](#-contributing) · [License](#-license)
+[Try It Online](#-try-it-online) · [Features](#-features) · [Usage](#-usage) · [Languages](#-languages) · [Architecture](#-architecture) · [Project Structure](#-project-structure) · [Customization](#️-customization) · [Data Storage](#-data-storage) · [Browser Support](#-browser-support) · [FAQ](#-faq) · [Contributing](#-contributing) · [License](#-license)
 
 ---
 
-## 🌐 Live Demo
+## 🌐 Try It Online
 
 <div align="center">
 
@@ -42,7 +42,7 @@ Multi-file, zero dependencies, 12 languages, works offline.
 <br/>
 
 <a href="https://firatnexus.github.io/Small-Steps-/">
-  <img src="https://img.shields.io/badge/Try%20it%20now-▶-267354?style=for-the-badge" alt="Try it now"/>
+  <img src="https://img.shields.io/badge/Open%20the%20app-▶-267354?style=for-the-badge" alt="Open the app"/>
 </a>
 
 </div>
@@ -198,7 +198,7 @@ start index.html
 <th>Difficulty</th>
 </tr>
 <tr>
-<td>🌐 <b>Live demo</b></td>
+<td>🌐 <b>Try online</b></td>
 <td><a href="https://firatnexus.github.io/Small-Steps-/">firatnexus.github.io/Small-Steps-</a></td>
 <td>⭐</td>
 </tr>
