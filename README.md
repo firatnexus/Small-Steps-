@@ -15,6 +15,10 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 <br/>
 
+[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/small-steps/)
+
+<br/>
+
 [🚀 Get Started](#-usage) · [✨ Features](#-features) · [🌍 Languages](#-languages) · [🛠️ Customization](#️-customization)
 
 </div>
@@ -23,7 +27,25 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 ## 📖 Table of Contents
 
-[Features](#-features) · [Usage](#-usage) · [Languages](#-languages) · [Architecture](#-architecture) · [Project Structure](#-project-structure) · [Customization](#️-customization) · [Data Storage](#-data-storage) · [Browser Support](#-browser-support) · [FAQ](#-faq) · [Contributing](#-contributing) · [License](#-license)
+[Live Demo](#-live-demo) · [Features](#-features) · [Usage](#-usage) · [Languages](#-languages) · [Architecture](#-architecture) · [Project Structure](#-project-structure) · [Customization](#️-customization) · [Data Storage](#-data-storage) · [Browser Support](#-browser-support) · [FAQ](#-faq) · [Contributing](#-contributing) · [License](#-license)
+
+---
+
+## 🌐 Live Demo
+
+<div align="center">
+
+### **🚀 [firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
+
+<sub>Works in any modern browser · Installable as PWA · Fully offline after first load</sub>
+
+<br/>
+
+<a href="https://firatnexus.github.io/small-steps/">
+  <img src="https://img.shields.io/badge/Try%20it%20now-▶-267354?style=for-the-badge" alt="Try it now"/>
+</a>
+
+</div>
 
 ---
 
@@ -135,7 +157,17 @@ flowchart LR
 
 ## 🚀 Usage
 
-### Installation
+### 🌐 Try Online
+
+<div align="center">
+
+**[🚀 firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
+
+No installation needed — just open in your browser.
+
+</div>
+
+### 💾 Local Installation
 
 <div align="center">
 
@@ -145,7 +177,7 @@ flowchart LR
 
 ```bash
 # 1️⃣ Clone
-git clone https://github.com/<user>/small-steps.git
+git clone https://github.com/firatnexus/small-steps.git
 cd small-steps
 
 # 2️⃣ Open
@@ -166,13 +198,18 @@ start index.html
 <th>Difficulty</th>
 </tr>
 <tr>
+<td>🌐 <b>Live demo</b></td>
+<td><a href="https://firatnexus.github.io/small-steps/">firatnexus.github.io/small-steps</a></td>
+<td>⭐</td>
+</tr>
+<tr>
 <td>💾 <b>Local file</b></td>
 <td>Download the folder → open <code>index.html</code></td>
 <td>⭐</td>
 </tr>
 <tr>
-<td>🌐 <b>GitHub Pages</b></td>
-<td>Repo → Settings → Pages → Deploy from branch</td>
+<td>🌐 <b>GitHub Pages (fork)</b></td>
+<td>Fork → Settings → Pages → Deploy from branch</td>
 <td>⭐⭐</td>
 </tr>
 <tr>
@@ -245,7 +282,7 @@ Once installed, it works offline.
 
 <br/>
 
-**Single step:** add a new key to the `TRANSLATIONS` object in `translations.js`.
+**Single step:** add a new key to the `TRANSLATIONS` object in `js/translations.js`.
 
 ```js
 const TRANSLATIONS = {
@@ -367,6 +404,7 @@ small-steps/
 <tr><td>⚙️ <b>JS</b></td><td>~570</td><td>State, tasks, timer, theme, stats</td><td>~18 KB</td></tr>
 <tr><td colspan="3" align="right"><b>Total</b></td><td><b>~66 KB</b></td></tr>
 </table>
+
 ---
 
 ## 🛠️ Customization
@@ -660,7 +698,9 @@ Thanks to everyone who contributes to this project.
 
 <br/>
 
-<sub>Once the project is published on GitHub, a contributor wall will appear here.</sub>
+<a href="https://github.com/firatnexus/small-steps/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=firatnexus/small-steps" alt="Contributors" />
+</a>
 
 </div>
 
@@ -669,6 +709,10 @@ Thanks to everyone who contributes to this project.
 <div align="center">
 
 ### ⭐ If you find it useful, give it a star!
+
+<br/>
+
+🌐 **[firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
 
 <br/>
 
