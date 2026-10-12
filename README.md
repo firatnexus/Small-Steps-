@@ -372,37 +372,40 @@ sequenceDiagram
 ## 📁 Project Structure
 
 ```
-small-steps/
+Small-Steps/
 │
+├── 🚫 .gitignore          # Git ignore rules
+├── 📜 LICENSE             # MIT
+├── 📖 README.md           # This file
+├── ⚙️ app.js              # Tasks · Timer · Theme · Stats
+├── 🖼️ icon.svg            # App icon
 ├── 📄 index.html          # Structure + ARIA + i18n markers
 ├── 📱 manifest.json       # PWA manifest
+├── 🎨 style.css           # Styles + 4 themes + responsive
 ├── 🔄 sw.js               # Service worker (offline cache)
-├── 🖼️ icon.svg            # App icon
 ├── 🧪 test.html           # In-browser i18n tests
-├── 📖 README.md           # This file
-├── 📜 LICENSE             # MIT
-├── 🚫 .gitignore          # Git ignore rules
-│
-├── 📁 css/
-│   └── 🎨 styles.css      # Style + 4 themes + responsive
-│
-└── 📁 js/
-    ├── 🌍 translations.js # 12 languages + i18n engine
-    └── ⚙️ app.js          # Tasks · Timer · Theme · Stats
+└── 🌍 translations.js     # 12 languages + i18n engine
 ```
 
 <table>
 <tr>
 <th>Layer</th>
+<th>File</th>
 <th>Lines</th>
-<th>Description</th>
 <th>Size</th>
 </tr>
-<tr><td>🎨 <b>CSS</b></td><td>~520</td><td>Theme variables, components, responsive</td><td>~16 KB</td></tr>
-<tr><td>📐 <b>HTML</b></td><td>~145</td><td>Semantic markup, ARIA</td><td>~6 KB</td></tr>
-<tr><td>🌍 <b>i18n</b></td><td>~600</td><td>12-language dictionary</td><td>~26 KB</td></tr>
-<tr><td>⚙️ <b>JS</b></td><td>~570</td><td>State, tasks, timer, theme, stats</td><td>~18 KB</td></tr>
-<tr><td colspan="3" align="right"><b>Total</b></td><td><b>~66 KB</b></td></tr>
+<tr><td>🚫 <b>Config</b></td><td><code>.gitignore</code></td><td>~30</td><td>~1 KB</td></tr>
+<tr><td>📜 <b>License</b></td><td><code>LICENSE</code></td><td>~21</td><td>~1 KB</td></tr>
+<tr><td>📖 <b>Docs</b></td><td><code>README.md</code></td><td>~430</td><td>~18 KB</td></tr>
+<tr><td>⚙️ <b>JS</b></td><td><code>app.js</code></td><td>~570</td><td>~18 KB</td></tr>
+<tr><td>🖼️ <b>Asset</b></td><td><code>icon.svg</code></td><td>~20</td><td>~1 KB</td></tr>
+<tr><td>📐 <b>HTML</b></td><td><code>index.html</code></td><td>~145</td><td>~6 KB</td></tr>
+<tr><td>📱 <b>PWA</b></td><td><code>manifest.json</code></td><td>~40</td><td>~1 KB</td></tr>
+<tr><td>🎨 <b>CSS</b></td><td><code>style.css</code></td><td>~520</td><td>~16 KB</td></tr>
+<tr><td>🔄 <b>PWA</b></td><td><code>sw.js</code></td><td>~50</td><td>~2 KB</td></tr>
+<tr><td>🧪 <b>Tests</b></td><td><code>test.html</code></td><td>~180</td><td>~7 KB</td></tr>
+<tr><td>🌍 <b>i18n</b></td><td><code>translations.js</code></td><td>~600</td><td>~26 KB</td></tr>
+<tr><td colspan="3" align="right"><b>Total</b></td><td><b>~96 KB</b></td></tr>
 </table>
 
 ---
