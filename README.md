@@ -1,732 +1,282 @@
-# 🌱 Small Steps
+# 🌱 Minik Adımlar · Small Steps
 
 <div align="center">
 
-**Task list + Pomodoro timer.**  
-Multi-file, zero dependencies, 12 languages, works offline.
+**Görev listesi + Pomodoro zamanlayıcısı.** · **Task list + Pomodoro timer.**
+Bağımlılık yok · 12 dil · çevrimdışı çalışır · telefon ve masaüstü için ayrı yerleşim
+Zero dependencies · 12 languages · works offline · separate phone and desktop layouts
 
-<br/>
+[
 
-[![Version](https://img.shields.io/badge/version-2.1-267354?style=flat-square)](../../releases)
-[![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-installation)
-[![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-languages)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
-[![No Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](#-project-structure)
+![Version](https://img.shields.io/badge/version-2.4-267354?style=flat-square)
 
-<br/>
+](../../releases)
+[
 
-[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)
 
-<br/>
+](#pwa)
+[
 
-[🚀 Get Started](#-usage) · [✨ Features](#-features) · [🌍 Languages](#-languages) · [🛠️ Customization](#️-customization)
+![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)
 
-</div>
+](#diller--languages)
+[
 
----
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)
 
-## 📖 Table of Contents
+](./LICENSE)
 
-[Live Demo](#-live-demo) · [Features](#-features) · [Usage](#-usage) · [Languages](#-languages) · [Architecture](#-architecture) · [Project Structure](#-project-structure) · [Customization](#️-customization) · [Data Storage](#-data-storage) · [Browser Support](#-browser-support) · [FAQ](#-faq) · [Contributing](#-contributing) · [License](#-license)
+[
 
----
+![Canlı Demo](https://img.shields.io/badge/🌐%20Canlı%20Demo%20·%20Live%20Demo-267354?style=for-the-badge)
 
-## 🌐 Live Demo
+](https://firatnexus.github.io/Small-Steps-/)
 
-<div align="center">
-
-### **🚀 [firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
-
-<sub>Works in any modern browser · Installable as PWA · Fully offline after first load</sub>
-
-<br/>
-
-<a href="https://firatnexus.github.io/small-steps/">
-  <img src="https://img.shields.io/badge/Try%20it%20now-▶-267354?style=for-the-badge" alt="Try it now"/>
-</a>
+**[Türkçe](#türkçe)** · **[English](#english)**
 
 </div>
 
----
+<!--
+Ekran görüntüleri için: docs/screenshots/ klasörüne light.png, dark.png, mobile.png koy
+ve aşağıdaki satırların yorumunu kaldır.
+| ☀️ Açık | 🌙 Koyu | 📱 Mobil |
+|:---:|:---:|:---:|
+| 
 
-## ✨ Features
+![Light](./docs/screenshots/light.png)
 
-<table>
-<tr>
-<td width="50%" valign="top">
+ | 
 
-### 📝 Tasks
-- ➕ **Quick add** — press `Enter`
-- ✅ **Complete / undo** — one click
-- ✏️ **Edit** — double-click · `Enter` to save · `Esc` to cancel
-- 🗑️ **Delete + Undo** — toast notification
-- 🔎 **Filters** — All · Active · Done
-- 📊 **Progress bar** — live percentage
-- 🧹 **Bulk clear** — reversible
+![Dark](./docs/screenshots/dark.png)
 
-</td>
-<td width="50%" valign="top">
+ | 
 
-### ⏱️ Pomodoro
-- 🔵 **Ring progress** — SVG animation
-- 🔁 **Auto-transition** — Focus → Break → Focus
-- 🎯 **3 modes** — Focus · Short · Long
-- ⚙️ **Adjustable** durations and rounds
-- ▶️ **Auto-start** option
-- ⏭️ **Skip / Reset / Pause**
-- 🔘 **Cycle dots** — visual feedback
+![Mobile](./docs/screenshots/mobile.png)
 
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
-### 🎨 Interface
-- 🌗 **4 themes** — Light · Dark · Sepia · High contrast
-- 🎨 **CSS variables** — easy palette
-- 📱 **Responsive** — mobile/tablet/desktop
-- 🎬 **Animations** — respects reduced motion
-- ♿ **Accessible** — ARIA, `aria-live`, focus management
-- 🧼 **Clean typography** — Inter font stack
-- 💎 **Soft shadows** and rounded corners
-
-</td>
-<td width="50%" valign="top">
-
-### ⚡ Technical
-- 🧩 **Zero dependencies** — pure HTML/CSS/JS
-- 💾 **localStorage** — works offline
-- 🌍 **12 languages + RTL**
-- 🔊 **Web Audio API** — file-free sound
-- 🔔 **Notification API** — desktop alerts
-- ⌨️ **Keyboard shortcuts**
-- 📦 **Multi-file** — no build step
-
-</td>
-</tr>
-</table>
+ |
+-->
 
 ---
 
-## 🎬 Demo
+# Türkçe
 
-<div align="center">
+## Özellikler
 
-### How it flows
+**Görevler**
+- Ekle (`Enter`), tamamla/geri al, çift tıklayarak düzenle, sil ve **geri al**
+- Tümü / Aktif / Tamamlanan filtreleri, ilerleme çubuğu, tamamlananları toplu temizleme (o da geri alınabilir)
 
-```mermaid
-flowchart LR
-    A([🌱 Open]) --> B[📝 Add Task]
-    B --> C{▶️ Start}
-    C --> D[🎯 Focus 25 min]
-    D --> E{Time up?}
-    E -- Yes --> F[☕ Short Break 5 min]
-    F --> G{Round count?}
-    G -- "multiple of 4" --> H[🛋️ Long Break 15 min]
-    G -- No --> D
-    H --> D
-    E -- No --> D
+**Zamanlayıcı**
+- Odak, kısa mola, uzun mola; süreler ve tur sayısı ayarlanabilir
+- Halka ilerlemesi, tur noktaları, duraklat / sıfırla / atla, molaları otomatik başlatma
+- Süre bitiş saatine göre hesaplanır; ekran kapanıp açılınca sayaç şaşmaz
+- Bitişte ses, titreşim ve **bildirim** (Android dahil, servis worker üzerinden)
+- "Sayaç çalışırken ekranı açık tut" ayarı (tarayıcı destekliyorsa görünür)
 
-    style A fill:#267354,color:#fff,stroke:#1c5c41
-    style D fill:#eaf4ed,color:#1c5c41,stroke:#267354
-    style F fill:#dbeafe,color:#1e40af,stroke:#4b8fd6
-    style H fill:#ede9fe,color:#5b21b6,stroke:#8b5cf6
-```
+**Arayüz**
+- 4 tema: açık, koyu, sepya, yüksek kontrast
+- 12 dil, Arapça için sağdan sola yazım; ilk açılışta tarayıcı dili algılanır
+- **Telefon / tablet:** tek sütun. **Masaüstü (1024 px+):** solda görevler ve haftalık istatistik, sağda sayfa kayarken sabit kalan zamanlayıcı
+- Haftalık odak grafiği ve seri sayacı, ARIA etiketleri, "azaltılmış hareket" desteği
 
-</div>
+**Veri**
+- Her şey yalnızca tarayıcında (`localStorage`) tutulur, sunucuya hiçbir şey gönderilmez
+- **Yedekle:** Ayarlar → "Yedeği dışa aktar" JSON dosyası indirir, "İçe aktar" geri yükler
 
-<details>
-<summary><b>🖼️ Screenshots (click to expand)</b></summary>
+## Kullanım
 
-<br/>
+**Çevrimiçi:** [firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)
 
-> 📸 Placeholders ready for your screenshots.  
-> Drop `light.png`, `dark.png`, `mobile.png`, `rtl.png` into `docs/screenshots/` and update this block.
-
-| ☀️ Light | 🌙 Dark |
-|:---:|:---:|
-| ![Light](./docs/screenshots/light.png) | ![Dark](./docs/screenshots/dark.png) |
-
-| 📱 Mobile | ↔️ RTL (العربية) |
-|:---:|:---:|
-| ![Mobile](./docs/screenshots/mobile.png) | ![RTL](./docs/screenshots/rtl.png) |
-
-</details>
-
----
-
-## 🚀 Usage
-
-### 🌐 Try Online
-
-<div align="center">
-
-**[🚀 firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
-
-No installation needed — just open in your browser.
-
-</div>
-
-### 💾 Local Installation
-
-<div align="center">
-
-**No build step. Download and open.**
-
-</div>
+**Yerelde:** derleme yok.
 
 ```bash
-# 1️⃣ Clone
-git clone https://github.com/firatnexus/small-steps.git
-cd small-steps
-
-# 2️⃣ Open
-# macOS
-open index.html
-# Linux
-xdg-open index.html
-# Windows
-start index.html
+git clone https://github.com/firatnexus/Small-Steps-.git
+cd Small-Steps-
+python3 -m http.server 8000   # sonra http://localhost:8000
 ```
 
-<br/>
+`index.html`'i doğrudan açmak da çalışır, ama `file://` üzerinde servis worker ve PWA özellikleri (çevrimdışı, bildirim, kurulum) devre dışı kalır.
 
-<table>
-<tr>
-<th>Method</th>
-<th>Steps</th>
-<th>Difficulty</th>
-</tr>
-<tr>
-<td>🌐 <b>Live demo</b></td>
-<td><a href="https://firatnexus.github.io/small-steps/">firatnexus.github.io/small-steps</a></td>
-<td>⭐</td>
-</tr>
-<tr>
-<td>💾 <b>Local file</b></td>
-<td>Download the folder → open <code>index.html</code></td>
-<td>⭐</td>
-</tr>
-<tr>
-<td>🌐 <b>GitHub Pages (fork)</b></td>
-<td>Fork → Settings → Pages → Deploy from branch</td>
-<td>⭐⭐</td>
-</tr>
-<tr>
-<td>⚡ <b>Netlify Drop</b></td>
-<td>Drag the folder to <a href="https://app.netlify.com/drop">app.netlify.com/drop</a></td>
-<td>⭐</td>
-</tr>
-<tr>
-<td>▲ <b>Vercel</b></td>
-<td><code>vercel --prod</code></td>
-<td>⭐⭐</td>
-</tr>
-</table>
+### PWA
 
-### 📱 PWA Installation
-
-The app can be installed on devices with browser support:
-
-| Platform | Method |
+| Platform | Yöntem |
 |:---|:---|
-| **Android (Chrome)** | ⋮ → "Add to Home screen" |
-| **iOS (Safari)** | Share → "Add to Home Screen" |
-| **Desktop (Chrome/Edge)** | ⊕ icon in the address bar |
+| Android (Chrome) | ⋮ → "Ana ekrana ekle" / "Uygulamayı yükle" |
+| iOS (Safari) | Paylaş → "Ana Ekrana Ekle" (bildirimler için iOS 16.4+ ve ana ekrana eklenmiş olmalı) |
+| Masaüstü (Chrome/Edge) | Adres çubuğundaki yükle simgesi |
 
-Once installed, it works offline.
+**Bildirimler:** ilk kez "Başlat"a bastığında izin istenir. Reddedersen uyarı verilir; tarayıcı site ayarlarından açabilirsin. Bildirim yalnızca sekme arka plandayken gösterilir.
 
-> [!NOTE]
-> Service workers require `http://` or `https://`. Opening via `file://` disables PWA features but the app still runs.
+### Klavye kısayolları
 
-### ⌨️ Keyboard Shortcuts
-
-<div align="center">
-
-| <kbd>Key</kbd> | Action |
+| Tuş | İşlev |
 |:---:|---|
-| <kbd>Space</kbd> | ▶️ Start / pause timer |
-| <kbd>N</kbd> | 📝 Focus task input |
-| <kbd>Enter</kbd> | ✅ Add task / save edit |
-| <kbd>Esc</kbd> | ❌ Cancel edit |
+| `Boşluk` | Sayacı başlat / duraklat |
+| `N` | Görev kutusuna odaklan |
+| `Enter` | Görevi ekle / düzenlemeyi kaydet |
+| `Esc` | Düzenlemeyi iptal et |
 
-</div>
+## Diller · Languages
 
----
+`tr` Türkçe · `en` English · `de` Deutsch · `es` Español · `fr` Français · `it` Italiano · `pt` Português · `ru` Русский · `ar` العربية (RTL) · `hi` हिन्दी · `ja` 日本語 · `zh` 中文
 
-## 🌍 Languages
+**Yeni dil eklemek:** `translations.js` içindeki `TRANSLATIONS` nesnesine yeni bir anahtar ekle (`nl: { name: "Nederlands", ... }`). Eksik anahtarlar İngilizceye düşer. Dil listesi otomatik oluşur. Sağdan sola yazılan bir dil için `applyLanguage` içindeki `lang === "ar"` koşulunu genişlet.
 
-> The app **auto-detects your browser language** on first launch; your choice is stored in `localStorage`.
-
-<div align="center">
-
-| | Code | Language | Direction | Speakers |
-|:---:|:---:|:---:|:---:|:---:|
-| 🇹🇷 | `tr` | Türkçe | `ltr` | ~80M |
-| 🇬🇧 | `en` | English | `ltr` | ~1.5B |
-| 🇩🇪 | `de` | Deutsch | `ltr` | ~135M |
-| 🇪🇸 | `es` | Español | `ltr` | ~500M |
-| 🇫🇷 | `fr` | Français | `ltr` | ~300M |
-| 🇮🇹 | `it` | Italiano | `ltr` | ~65M |
-| 🇵🇹 | `pt` | Português | `ltr` | ~260M |
-| 🇷🇺 | `ru` | Русский | `ltr` | ~250M |
-| 🇸🇦 | `ar` | العربية | **`rtl`** | ~420M |
-| 🇮🇳 | `hi` | हिन्दी | `ltr` | ~600M |
-| 🇯🇵 | `ja` | 日本語 | `ltr` | ~125M |
-| 🇨🇳 | `zh` | 中文 | `ltr` | ~1.2B |
-
-</div>
-
-<details>
-<summary><b>➕ How to add a new language (click to expand)</b></summary>
-
-<br/>
-
-**Single step:** add a new key to the `TRANSLATIONS` object in `js/translations.js`.
-
-```js
-const TRANSLATIONS = {
-  // ... existing languages
-  nl: {
-    name: "Nederlands",
-    langLabel: "Taal",
-    themeToggle: "Thema wisselen",
-    eyebrow: "Vind je eigen tempo",
-    title: "Kleine Stappen 🌱",
-    intro: "Verdeel grote taken in kleine stappen...",
-    // ... all remaining keys
-  }
-};
-```
-
-The language `<select>` is populated automatically — no other changes needed. ✨
-
-**For an RTL language:** add the new code to the condition inside `applyLanguage`:
-
-```js
-document.documentElement.dir =
-  ["ar", "he", "fa", "ur"].includes(lang) ? "rtl" : "ltr";
-```
-
-</details>
-
----
-
-## 🏗️ Architecture
-
-### Overview
-
-```mermaid
-graph TB
-    subgraph Browser["🌐 Browser"]
-        UI["🎨 UI (HTML + CSS)"]
-        LS["💾 localStorage"]
-        WA["🔊 Web Audio API"]
-        NA["🔔 Notification API"]
-    end
-
-    subgraph App["⚙️ App Layer"]
-        i18n["🌍 i18n Engine<br/>12 languages + RTL"]
-        Tasks["📝 Tasks Module"]
-        Timer["⏱️ Pomodoro Engine"]
-        State["🔄 State Management"]
-    end
-
-    UI --> i18n
-    UI --> Tasks
-    UI --> Timer
-    Tasks --> State
-    Timer --> State
-    State --> LS
-    Timer --> WA
-    Timer --> NA
-
-    style App fill:#eaf4ed,stroke:#267354,stroke-width:2px
-    style Browser fill:#f5f7f2,stroke:#68766f,stroke-width:2px
-    style i18n fill:#fff,stroke:#267354
-    style Tasks fill:#fff,stroke:#267354
-    style Timer fill:#fff,stroke:#267354
-    style State fill:#fff,stroke:#267354
-```
-
-### Data Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant U as 👤 User
-    participant A as 🎨 UI
-    participant S as 🔄 State
-    participant L as 💾 localStorage
-
-    U->>A: Add task / Start
-    A->>S: state.tasks.unshift(...)
-    S->>L: JSON.stringify(state)
-    L-->>S: ✅ saved
-    S-->>A: renderTasks()
-    A-->>U: 🎉 Instant update
-```
-
----
-
-## 📁 Project Structure
+## Proje yapısı
 
 ```
-Small-Steps/
-│
-├── 🚫 .gitignore          # Git ignore rules
-├── 📜 LICENSE             # MIT
-├── 📖 README.md           # This file
-├── ⚙️ app.js              # Tasks · Timer · Theme · Stats
-├── 🖼️ icon.svg            # App icon
-├── 📄 index.html          # Structure + ARIA + i18n markers
-├── 📱 manifest.json       # PWA manifest
-├── 🎨 style.css           # Styles + 4 themes + responsive
-├── 🔄 sw.js               # Service worker (offline cache)
-├── 🧪 test.html           # In-browser i18n tests
-└── 🌍 translations.js     # 12 languages + i18n engine
+Small-Steps-/
+├── index.html            # Yapı + ARIA + i18n işaretleri
+├── style.css             # Stiller, 4 tema, telefon/tablet/masaüstü yerleşimi
+├── app.js                # Görevler · zamanlayıcı · tema · istatistik · yedekleme
+├── translations.js       # 12 dil + i18n motoru
+├── sw.js                 # Servis worker (çevrimdışı + bildirim tıklaması)
+├── manifest.json         # PWA manifesti
+├── icon.svg              # Uygulama ikonu
+├── icon-maskable.svg     # Maskeli ikon kaynağı
+├── icon-192.png · icon-512.png · icon-maskable-512.png · apple-touch-icon.png
+├── test.html             # Tarayıcıda i18n testleri
+├── LICENSE               # MIT
+└── README.md
 ```
 
-<table>
-<tr>
-<th>Layer</th>
-<th>File</th>
-<th>Lines</th>
-<th>Size</th>
-</tr>
-<tr><td>🚫 <b>Config</b></td><td><code>.gitignore</code></td><td>~30</td><td>~1 KB</td></tr>
-<tr><td>📜 <b>License</b></td><td><code>LICENSE</code></td><td>~21</td><td>~1 KB</td></tr>
-<tr><td>📖 <b>Docs</b></td><td><code>README.md</code></td><td>~430</td><td>~18 KB</td></tr>
-<tr><td>⚙️ <b>JS</b></td><td><code>app.js</code></td><td>~570</td><td>~18 KB</td></tr>
-<tr><td>🖼️ <b>Asset</b></td><td><code>icon.svg</code></td><td>~20</td><td>~1 KB</td></tr>
-<tr><td>📐 <b>HTML</b></td><td><code>index.html</code></td><td>~145</td><td>~6 KB</td></tr>
-<tr><td>📱 <b>PWA</b></td><td><code>manifest.json</code></td><td>~40</td><td>~1 KB</td></tr>
-<tr><td>🎨 <b>CSS</b></td><td><code>style.css</code></td><td>~520</td><td>~16 KB</td></tr>
-<tr><td>🔄 <b>PWA</b></td><td><code>sw.js</code></td><td>~50</td><td>~2 KB</td></tr>
-<tr><td>🧪 <b>Tests</b></td><td><code>test.html</code></td><td>~180</td><td>~7 KB</td></tr>
-<tr><td>🌍 <b>i18n</b></td><td><code>translations.js</code></td><td>~600</td><td>~26 KB</td></tr>
-<tr><td colspan="3" align="right"><b>Total</b></td><td><b>~96 KB</b></td></tr>
-</table>
+## Özelleştirme
 
----
-
-## 🛠️ Customization
-
-### ⏱️ Default Durations
+Varsayılan süreler `app.js` içinde:
 
 ```js
 const DEFAULT_SETTINGS = {
-  focus:     25,     // 🎯 focus minutes
-  short:      5,     // ☕ short break
-  long:      15,     // 🛋️ long break
-  longEvery:  4,     // 🔁 rounds before long break
-  autoStart:  false, // ▶️ auto-start breaks
-  sound:      true,  // 🔊 sound alert
+  focus: 25, short: 5, long: 15, longEvery: 4,
+  autoStart: false, sound: true, keepAwake: false
 };
 ```
 
-### 🎨 Color Palette
+Renkler `style.css` başındaki CSS değişkenlerindedir (`--green`, `--bg`, `--card`, `--ink` …). Her tema (`[data-theme="dark"]`, `sepia`, `contrast`) bu değişkenleri yeniden tanımlar.
 
-<details>
-<summary><b>Show CSS variables</b></summary>
+## Veri depolama
 
-```css
-:root {
-  /* 🎨 Brand */
-  --green:       #267354;   /* primary accent */
-  --green-dark:  #1c5c41;   /* hover */
-  --accent:      #267354;   /* buttons */
-  --break:       #4b8fd6;   /* break color */
+| Anahtar | İçerik |
+|:---|:---|
+| `small-steps-v2` | Görevler, ayarlar, günlük istatistik, filtre |
+| `small-steps-history` | Günlük geçmiş (en fazla 90 gün) |
+| `small-steps-language` | Seçili dil |
+| `small-steps-theme` | Seçili tema |
 
-  /* 🖼️ Surfaces */
-  --bg:          #f5f7f2;   /* page */
-  --glow:        #e7f2e8;   /* radial glow */
-  --card:        #ffffff;   /* card */
-  --field:       #fbfcfa;   /* input */
+Eski `small-steps-tasks-v1` verisi ilk açılışta otomatik taşınır.
 
-  /* ✍️ Text */
-  --ink:         #20312b;   /* primary text */
-  --muted:       #68766f;   /* secondary text */
+> **Uyarı:** Veri yalnızca o tarayıcıdadır. Gizli sekmede sekme kapanınca silinir, "site verilerini temizle" de görevleri siler. Düzenli yedek al.
 
-  /* 🔲 Lines */
-  --line:        #e3eae4;   /* border */
-  --soft:        #eaf4ed;   /* soft background */
-
-  /* ⚠️ Status */
-  --danger:      #a13e3e;   /* delete */
-}
-
-[data-theme="dark"] {
-  --green:       #6ecfa2;
-  --bg:          #0e1512;
-  --card:        #16211d;
-  --ink:         #e6efe9;
-  --muted:       #93a49b;
-  /* ... */
-}
-```
-
-</details>
-
-### 🎯 Adding a Timer Mode
-
-```js
-// 1) Add label to TRANSLATIONS
-// 2) Add duration in durationFor()
-// 3) Add new <button data-mode="custom"> in HTML
-// 4) Handle new mode in completeTimer() flow
-```
-
----
-
-## 💾 Data Storage
-
-<div align="center">
-
-| 🔑 Key | 📦 Contents | 📏 Size |
-|:---|:---|:---:|
-| `small-steps-v2` | Tasks, settings, stats, filter | ~2–50 KB |
-| `small-steps-history` | Weekly history (up to 90 days) | ~5–20 KB |
-| `small-steps-language` | Selected language code | ~2 B |
-| `small-steps-theme` | Selected theme | ~10 B |
-
-</div>
-
-> [!IMPORTANT]
-> **Migration:** Legacy data from `small-steps-tasks-v1` is **automatically migrated** on first launch.
-
-> [!WARNING]
-> Data is stored **only in that browser**. In private/incognito mode, it disappears when the tab closes. "Clear site data" wipes your tasks.
-
-> [!TIP]
-> To back up, open DevTools → Application → Local Storage → copy the `small-steps-v2` value.
-
-### Example Record Schema
+Yedek dosyası biçimi:
 
 ```json
 {
-  "tasks": [
-    {
-      "id": "lq3k9p-a8f2b1",
-      "text": "Take a 10-minute walk",
-      "done": false,
-      "createdAt": 1730000000000,
-      "doneAt": null
-    }
-  ],
-  "settings": {
-    "focus": 25, "short": 5, "long": 15,
-    "longEvery": 4, "autoStart": false, "sound": true
-  },
-  "stats": { "date": "2026-10-12", "focusMinutes": 75 },
-  "filter": "all"
+  "app": "small-steps",
+  "version": 2,
+  "exportedAt": "2026-10-12T20:00:00.000Z",
+  "state": { "tasks": [], "settings": {}, "stats": {}, "filter": "all" },
+  "history": { "2026-10-12": { "focus": 75, "done": 3 } }
 }
 ```
 
----
+İçe aktarırken dosya doğrulanır, geçersiz alanlar atılır ve mevcut verinin üzerine yazmadan önce onay istenir. Tema ve dil cihaza özel olduğu için yedeğe girmez.
 
-## 🌐 Browser Support
+## Tarayıcı desteği
 
-<div align="center">
+Chrome / Edge 90+, Firefox 88+, Safari 14+, Samsung Internet 14+. Ekranı açık tutma ve bildirimler tarayıcı desteğine bağlıdır; desteklenmiyorsa uygulama bunlar olmadan çalışmaya devam eder.
 
-| | Browser | Minimum |
-|:---:|:---|:---:|
-| ![Chrome](https://img.shields.io/badge/-Chrome-4285F4?style=flat-square&logo=googlechrome&logoColor=white) | Chrome / Edge | `90+` |
-| ![Firefox](https://img.shields.io/badge/-Firefox-FF7139?style=flat-square&logo=firefoxbrowser&logoColor=white) | Firefox | `88+` |
-| ![Safari](https://img.shields.io/badge/-Safari-000000?style=flat-square&logo=safari&logoColor=white) | Safari | `14+` |
-| ![iOS](https://img.shields.io/badge/-iOS-000000?style=flat-square&logo=ios&logoColor=white) | iOS Safari | `14+` |
-| ![Samsung](https://img.shields.io/badge/-Samsung-1428A0?style=flat-square&logo=samsung&logoColor=white) | Samsung Internet | `14+` |
+## Yol haritası
 
-</div>
+- ✅ Görevler, Pomodoro, 12 dil, 4 tema, istatistik, PWA, bildirimler, JSON yedekleme, masaüstü yerleşimi
+- 🚧 Etiketler / kategoriler, öncelik düzeyleri
+- 📋 Takvim görünümü, isteğe bağlı bulut eşitleme
+- 💭 Sesle görev ekleme
 
-> [!NOTE]
-> Desktop notifications and sound alerts depend on browser permissions. Sound is generated via **Web Audio API** — no audio files required.
+## Katkı
 
----
+Hata bildirimleri, yeni diller ve çeviri düzeltmeleri memnuniyetle karşılanır: [Issue aç](../../issues) ya da fork'la ve Pull Request gönder. Çeviri eklerken `translations.js` içindeki tüm anahtarları doldurmaya çalış.
 
-## 🗺️ Roadmap
+## Lisans
 
-<div align="center">
-
-| Status | Feature | Version |
-|:---:|:---|:---:|
-| ✅ | Add / delete / edit tasks | `1.0` |
-| ✅ | Pomodoro timer | `1.0` |
-| ✅ | 12 languages + RTL | `2.0` |
-| ✅ | Dark theme | `2.0` |
-| ✅ | Sound alert + notifications | `2.0` |
-| ✅ | Keyboard shortcuts | `2.0` |
-| ✅ | Weekly stats + streak | `2.1` |
-| ✅ | Extra themes (sepia, contrast) | `2.1` |
-| ✅ | PWA (installable) | `2.1` |
-| 🚧 | Task tags / categories | `2.2` |
-| 🚧 | Priority levels | `2.2` |
-| 📋 | Calendar view | `3.0` |
-| 📋 | Optional cloud sync | `3.0` |
-| 💭 | Voice input | `?` |
-| 💭 | JSON export / import | `?` |
-
-</div>
+[MIT](./LICENSE). İstediğin gibi kullan, değiştir, paylaş.
 
 ---
 
-## ❓ FAQ
+# English
 
-<details>
-<summary><b>💾 Does my data go to a server?</b></summary>
-<br/>
-No. Everything is stored <b>only in your browser's <code>localStorage</code></b>. No network requests are made — the app runs fully offline.
-</details>
+## Features
 
-<details>
-<summary><b>📱 Can I use it on my phone?</b></summary>
-<br/>
-Yes. The responsive design works seamlessly in mobile browsers. Add it to your home screen to use it like a native app.
-</details>
+**Tasks**
+- Add (`Enter`), complete/undo, double-click to edit, delete with **undo**
+- All / Active / Done filters, progress bar, reversible bulk clear
 
-<details>
-<summary><b>🔔 Notifications aren't working.</b></summary>
-<br/>
-Two conditions apply: (1) permission must be granted from the browser, (2) the tab must be in the background. When "Sound alert" is enabled in settings, the chime plays even when the tab is active.
-</details>
+**Timer**
+- Focus, short break, long break; durations and rounds are adjustable
+- Ring progress, round dots, pause / reset / skip, optional auto-start for breaks
+- Time is computed from an end timestamp, so the clock stays correct when the screen turns off
+- Sound, vibration and **notifications** on completion (works on Android through the service worker)
+- "Keep screen on while timer runs" setting (shown only if the browser supports it)
 
-<details>
-<summary><b>🌍 My browser language isn't in the list.</b></summary>
-<br/>
-The app falls back to English. To add your language, follow the steps in the <a href="#-languages">Languages</a> section — adding a single key to the <code>TRANSLATIONS</code> object is enough.
-</details>
+**Interface**
+- 4 themes: light, dark, sepia, high contrast
+- 12 languages with RTL for Arabic; the browser language is detected on first launch
+- **Phone / tablet:** single column. **Desktop (1024 px+):** tasks and weekly stats on the left, a sticky timer on the right
+- Weekly focus chart and streak, ARIA labels, reduced-motion support
 
-<details>
-<summary><b>🧹 I accidentally deleted a task — can I undo?</b></summary>
-<br/>
-Yes! After deletion, a toast notification appears at the bottom of the screen. Click <b>"Undo"</b> to restore the last deleted task (or bulk-cleared tasks). The toast disappears after ~5 seconds.
-</details>
+**Data**
+- Everything stays in your browser (`localStorage`); nothing is sent to a server
+- **Backup:** Settings → "Export backup" downloads a JSON file, "Import backup" restores it
 
-<details>
-<summary><b>🔋 Does it drain the battery?</b></summary>
-<br/>
-No. The timer updates once per second; the browser throttles it further in the background. When the tab returns, the clock auto-syncs.
-</details>
+## Usage
 
-<details>
-<summary><b>📦 Why multiple files?</b></summary>
-<br/>
-Separation of concerns: HTML for structure, CSS for presentation, JS for behavior, and a dedicated i18n file. Easier to maintain, extend, and translate than a single monolithic file.
-</details>
+**Online:** [firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)
 
----
+**Locally:** no build step.
 
-## 🤝 Contributing
-
-<div align="center">
-
-Contributions are welcome! 🌱
-
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=for-the-badge)](../../pulls)
-[![Issues](https://img.shields.io/badge/issues-open-267354?style=for-the-badge)](../../issues)
-
-</div>
-
-### Flow
-
-```mermaid
-gitGraph
-    commit id: "initial"
-    branch feature/new-language
-    checkout feature/new-language
-    commit id: "feat: Dutch"
-    commit id: "test: translation check"
-    checkout main
-    merge feature/new-language tag: "v2.2"
-    commit id: "docs: README"
+```bash
+git clone https://github.com/firatnexus/Small-Steps-.git
+cd Small-Steps-
+python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-### Steps
+Opening `index.html` directly also works, but over `file://` the service worker and PWA features (offline, notifications, install) are disabled.
 
-1. 🍴 **Fork it**
-2. 🌿 **Create a branch:** `git checkout -b feature/amazing-feature`
-3. ✍️ **Make your change** and test
-4. 💬 **Commit:** `git commit -m "feat: amazing feature added"`
-5. 🚀 **Push:** `git push origin feature/amazing-feature`
-6. 🎉 **Open a Pull Request**
+**Install as an app:** Android Chrome → ⋮ → "Add to Home screen" / "Install app". iOS Safari → Share → "Add to Home Screen" (notifications need iOS 16.4+ and the app added to the home screen). Desktop Chrome/Edge → install icon in the address bar.
 
-### Commit Conventions
+**Notifications:** the permission prompt appears the first time you press Start. If you deny it, the app shows a hint; you can re-enable it in the browser's site settings. Notifications appear only while the tab is in the background.
 
-<div align="center">
+**Keyboard shortcuts:** `Space` start/pause · `N` focus the task input · `Enter` add/save · `Esc` cancel edit.
 
-| Emoji | Type | Example |
-|:---:|:---|:---|
-| ✨ | `feat` | `feat: dark theme added` |
-| 🐛 | `fix` | `fix: RTL alignment fixed` |
-| 📝 | `docs` | `docs: README updated` |
-| 🎨 | `style` | `style: softened button shadow` |
-| ♻️ | `refactor` | `refactor: simplified i18n engine` |
-| ⚡ | `perf` | `perf: optimized render loop` |
-| 🌍 | `i18n` | `i18n: Dutch added` |
+## Languages
 
-</div>
+`tr` `en` `de` `es` `fr` `it` `pt` `ru` `ar` (RTL) `hi` `ja` `zh`
 
-### Contribution Ideas
+**Add a language:** add a new key to the `TRANSLATIONS` object in `translations.js`. Missing keys fall back to English, and the language picker fills itself. For another right-to-left language, widen the `lang === "ar"` check in `applyLanguage`.
 
-- [ ] 🌍 Add a new language (Dutch, Polish, Swedish…)
-- [ ] 🎨 New theme (high contrast, sepia variants)
-- [ ] 📊 Statistics screen
-- [ ] 🧪 Tests (Vitest + jsdom)
-- [ ] 📱 iOS PWA splash screen
-- [ ] 🔊 Alternative alert sounds
-- [ ] 📖 Add screenshots
-- [ ] ♿ Accessibility audit
+## Project structure
 
----
+See the tree in the Turkish section above. All files live in the repository root; there is no build step and no dependencies.
 
-## 📜 License
+## Customization
 
-<div align="center">
+Defaults live in `DEFAULT_SETTINGS` in `app.js` (see above). Colors are CSS variables at the top of `style.css`; each theme redefines them.
 
-**MIT License** — use, modify, share freely.
+## Data storage and backup
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](./LICENSE)
+Keys: `small-steps-v2` (tasks, settings, daily stats, filter), `small-steps-history` (up to 90 days), `small-steps-language`, `small-steps-theme`. Legacy `small-steps-tasks-v1` data is migrated automatically.
 
-</div>
+> **Warning:** data lives only in that browser. Private mode and "clear site data" erase it. Export a backup regularly.
 
-See [`LICENSE`](./LICENSE) for the full text.
+Imports are validated, invalid fields are dropped, and you are asked to confirm before current data is replaced. Theme and language are per-device and are not part of the backup.
 
----
+## Browser support
 
-## 🙏 Thanks
+Chrome / Edge 90+, Firefox 88+, Safari 14+, Samsung Internet 14+. Screen wake lock and notifications depend on browser support; the app keeps working without them.
 
-<div align="center">
+## Contributing
 
-Thanks to everyone who contributes to this project.
+Bug reports, new languages and translation fixes are welcome: [open an issue](../../issues) or fork and send a pull request. When adding a language, try to fill in every key from `translations.js`.
 
-<br/>
+## License
 
-<a href="https://github.com/firatnexus/small-steps/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=firatnexus/small-steps" alt="Contributors" />
-</a>
-
-</div>
-
----
-
-<div align="center">
-
-### ⭐ If you find it useful, give it a star!
-
-<br/>
-
-🌐 **[firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)**
-
-<br/>
-
-<a href="#top">
-  <img src="https://img.shields.io/badge/⬆%20Back%20to%20top-267354?style=for-the-badge" alt="Back to top"/>
-</a>
-
-<br/><br/>
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=267354&height=120&section=footer&text=Small%20steps%2C%20big%20change.&fontSize=22&fontColor=ffffff&animation=twinkling&fontAlignY=65" width="100%"/>
-
-<sub>🌱 Made with love — from Türkiye 🌍 to the world</sub>
-
-</div>
+[MIT](./LICENSE). Use, modify and share freely.
