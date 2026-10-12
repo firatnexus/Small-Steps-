@@ -30,7 +30,8 @@
 
 /* ---------- 2. TEMEL ---------- */
 * { box-sizing: border-box; }
-html, body { overflow-x: hidden; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body { overflow-x: clip; }
 body {
   margin: 0; min-height: 100vh;
   background: radial-gradient(ellipse at 10% 0%, var(--glow) 0, transparent 36rem), var(--bg);
@@ -40,16 +41,18 @@ body {
 @supports (min-height: 100dvh) { body { min-height: 100dvh; } }
 img, svg, video { max-width: 100%; height: auto; }
 button, input, select { font: inherit; }
-.wrap { width: min(100% - 32px, 940px); margin: 0 auto; padding: 42px 0 60px; }
+.wrap {
+  width: min(100% - 32px, 940px); margin: 0 auto;
+  padding: 42px env(safe-area-inset-right, 0px) max(60px, env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px);
+}
 
 /* ---------- 3. ÜST BAR ---------- */
 .topbar {
-  display: flex; justify-content: flex-end; align-items: center;
-  gap: 9px; margin-bottom: 24px; flex-wrap: wrap;
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px; margin-bottom: 24px;
 }
-.language-control { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .9rem; }
 .lang-select {
-  max-width: 190px; padding: 9px 30px 9px 11px;
+  min-width: 0; max-width: min(190px, 60vw); padding: 9px 30px 9px 11px;
   border: 1px solid var(--line); border-radius: 11px;
   background-color: var(--card); color: var(--ink); font-weight: 620;
   cursor: pointer; appearance: none;
@@ -236,13 +239,13 @@ footer {
    ============================================================ */
 @media (max-width: 720px) {
   .wrap { padding-top: 25px; }
-  .grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
   .card { padding: 19px; }
   .timer-ring { width: 200px; }
   .topbar { justify-content: space-between; }
 }
 @media (max-width: 900px) and (min-width: 721px) {
-  .grid { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: minmax(0, 1fr); }
   .timer-card { max-width: 520px; margin: 0 auto; }
 }
 @media (hover: none) and (pointer: coarse) {
@@ -256,7 +259,7 @@ footer {
   .task input[type="checkbox"] { width: 22px; height: 22px; }
 }
 @media (max-width: 360px) {
-  .wrap { width: calc(100% - 20px); padding: 20px 0 40px; }
+  .wrap { width: calc(100% - 20px); padding-top: 20px; }
   .card { padding: 16px; border-radius: 16px; }
   .task-form { flex-wrap: wrap; }
   .task-form input { flex-basis: 100%; }
@@ -275,15 +278,10 @@ footer {
   .wrap { padding-top: 20px; }
 }
 @media (min-width: 1400px) {
-  .wrap { max-width: 1080px; }
+  .wrap { width: min(100% - 32px, 1080px); }
   .grid { grid-template-columns: minmax(0, 1.4fr) minmax(340px, .9fr); }
 }
 @supports (padding: max(0px)) {
-  .wrap {
-    padding-left:  max(16px, env(safe-area-inset-left));
-    padding-right: max(16px, env(safe-area-inset-right));
-    padding-bottom: max(60px, env(safe-area-inset-bottom));
-  }
   .toast { bottom: max(22px, env(safe-area-inset-bottom)); }
 }
 
@@ -406,11 +404,7 @@ footer {
     gap: 12px;
     margin-bottom: 20px;
   }
-  .language-control {
-    font-size: .85rem;
-    gap: 6px;
-  }
-  .lang-select {
+    .lang-select {
     max-width: 140px;
     padding: 8px 26px 8px 10px;
     font-size: .85rem;
@@ -495,7 +489,8 @@ footer {
 /* 7. Genel boşluk optimizasyonu */
 @media (max-width: 720px) {
   .wrap {
-    padding: 24px 0 40px;
+    padding-top: 24px;
+    padding-bottom: max(40px, env(safe-area-inset-bottom, 0px));
   }
   .card {
     padding: 18px;
@@ -507,4 +502,17 @@ footer {
   .grid {
     gap: 14px;
   }
+}
+
+/* ============================================================
+   v2.3 — üst bar sadeleştirme, küçük iyileştirmeler
+   ============================================================ */
+.topbar .lang-select { margin-inline-end: auto; }
+.card, .task, .stat-tile { min-width: 0; }
+.stat-tile .label { overflow-wrap: anywhere; }
+button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
+.task-form input, .edit-input, .settings-grid input[type="number"], .lang-select { font-size: max(16px, 1rem); }
+@media (max-width: 480px) {
+  .mode-chips { flex-wrap: nowrap; gap: 6px; }
+  .mode-chips .chip { flex: 1 1 auto; padding: 10px 8px; font-size: .84rem; white-space: nowrap; }
 }
