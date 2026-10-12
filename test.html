@@ -114,4 +114,173 @@
   });
 
   test("12 dil tanımlı", () => {
-    eq(SUPPORTED_LANGS.length, 12, `Beklenen 12, gelen ${SU
+    eq(SUPPORTED_LANGS.length, 12, `Beklenen 12, gelen ${SUPPORTED_LANGS.length}`);
+    return SUPPORTED_LANGS.join(", ");
+  });
+
+  test("Beklenen 12 dil kodunun tümü var", () => {
+    const expected = ["en","tr","es","fr","de","pt","it","hi","ar","zh","ja","ru"];
+    const missing = expected.filter(k => !SUPPORTED_LANGS.includes(k));
+    assert(missing.length === 0, `Eksik: ${missing.join(", ")}`);
+    return "tamam";
+  });
+
+  test("t() mevcut anahtarı döner", () => {
+    applyLanguage("en");
+    eq(t("add"), "Add");
+    return `en.add = "Add"`;
+  });
+
+  test("t() bilinmeyen anahtarda anahtarı döner", () => {
+    const v = t("__yok_boyle_anahtar__");
+    eq(v, "__yok_boyle_anahtar__");
+    return v;
+  });
+
+  test("t() parametreleri interpolate eder", () => {
+    applyLanguage("tr");
+    const v = t("count", { done: 3, total: 5 });
+    assert(v.includes("3") && v.includes("5"), `Gelen: "${v}"`);
+    return v;
+  });
+
+  test("Tüm dillerde 'title' anahtarı var", () => {
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      if (!TRANSLATIONS[code].title) eksik.push(code);
+    }
+    assert(eksik.length === 0, `Eksik: ${eksik.join(", ")}`);
+    return "tamam";
+  });
+
+  test("Tüm diller İngilizce ile aynı anahtar setine sahip", () => {
+    const ref = new Set(Object.keys(TRANSLATIONS.en));
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const key of ref) {
+        if (!(key in TRANSLATIONS[code])) eksik.push(`${code}.${key}`);
+      }
+    }
+    assert(eksik.length === 0, `Eksik anahtarlar:\n${eksik.slice(0,20).join("\n")}${eksik.length>20 ? "\n…" : ""}`);
+    return `${ref.size} anahtar × 12 dil = tam`;
+  });
+
+  test("Her dilde 'name' ve 'langLabel' var", () => {
+    for (const code of SUPPORTED_LANGS) {
+      assert(TRANSLATIONS[code].name, `${code} için name yok`);
+      assert(TRANSLATIONS[code].langLabel, `${code} için langLabel yok`);
+    }
+    return "tamam";
+  });
+
+  test("Arapça seçildiğinde document.dir = rtl", () => {
+    applyLanguage("ar");
+    eq(document.documentElement.dir, "rtl");
+    eq(document.documentElement.lang, "ar");
+    return "ar → rtl";
+  });
+
+  test("Türkçe seçildiğinde document.dir = ltr", () => {
+    applyLanguage("tr");
+    eq(document.documentElement.dir, "ltr");
+    return "tr → ltr";
+  });
+
+  test("buildLangSelect() 12 option üretir", () => {
+    const sel = document.createElement("select");
+    buildLangSelect(sel);
+    eq(sel.options.length, 12);
+    return `${sel.options.length} seçenek`;
+  });
+
+  test("Dil seçici seçili dili yansıtır", () => {
+    setLanguage("de");
+    const sel = document.createElement("select");
+    buildLangSelect(sel);
+    eq(sel.value, "de");
+    return `de seçili`;
+  });
+
+  test("setLanguage() localStorage'a yazar", () => {
+    setLanguage("fr");
+    eq(localStorage.getItem("small-steps-language"), "fr");
+    return "fr kaydedildi";
+  });
+
+  test("detectInitialLang() kayıtlı dili okur", () => {
+    setLanguage("ja");
+    eq(detectInitialLang(), "ja");
+    return "ja okundu";
+  });
+
+  test("Geçersiz dil kodu reddedilir", () => {
+    const before = getLang();
+    setLanguage("xx");
+    eq(getLang(), before, "xx kabul edildi");
+    return "reddedildi";
+  });
+
+  test("Tema etiketleri tüm dillerde var", () => {
+    const keys = ["themeLight", "themeDark", "themeSepia", "themeContrast"];
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const k of keys) {
+        if (!TRANSLATIONS[code][k]) eksik.push(`${code}.${k}`);
+      }
+    }
+    assert(eksik.length === 0, `Eksik: ${eksik.join(", ")}`);
+    return `${keys.length} anahtar × 12 dil`;
+  });
+
+  test("İstatistik anahtarları tüm dillerde var", () => {
+    const keys = ["statsHeading","statFocusWeek","statTasksWeek","statStreak",
+                  "unitMin","unitDays","weekChartAria"];
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const k of keys) {
+        if (!TRANSLATIONS[code][k]) eksik.push(`${code}.${k}`);
+      }
+    }
+    assert(eksik.length === 0, `Eksik: ${eksik.join(", ")}`);
+    return `${keys.length} anahtar × 12 dil`;
+  });
+
+  test("Hiçbir çeviride boş string yok", () => {
+    const bos = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const [k, v] of Object.entries(TRANSLATIONS[code])) {
+        if (typeof v === "string" && v.trim() === "") bos.push(`${code}.${k}`);
+      }
+    }
+    assert(bos.length === 0, `Boş: ${bos.join(", ")}`);
+    return "tamam";
+  });
+
+  const pass = results.filter(r => r.ok).length;
+  const fail = results.length - pass;
+  const pct = results.length ? Math.round((pass / results.length) * 100) : 0;
+
+  document.querySelector("#summary").innerHTML = `
+    <div><div class="label">Toplam</div><div class="value">${results.length}</div></div>
+    <div><div class="label">Geçti</div><div class="value pass">${pass}</div></div>
+    <div><div class="label">Başarısız</div><div class="value ${fail ? "fail" : ""}">${fail}</div></div>
+  `;
+  document.querySelector("#bar").style.width = pct + "%";
+
+  document.querySelector("#results").innerHTML = results.map(r => `
+    <li class="test ${r.ok ? "pass" : "fail"}">
+      <span class="mark ${r.ok ? "pass" : "fail"}">${r.ok ? "✓" : "✗"}</span>
+      <div class="msg">
+        <div class="title">${r.title}</div>
+        ${r.details ? `<div class="details">${r.details.replace(/</g, "&lt;")}</div>` : ""}
+      </div>
+    </li>
+  `).join("");
+
+  document.title = `${fail ? "❌" : "✅"} Testler — ${pass}/${results.length}`;
+
+  applyLanguage(detectInitialLang());
+})();
+</script>
+</body>
+</html>
