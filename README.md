@@ -35,15 +35,61 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 <div align="center">
 
-### **🚀 [firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)**
-
-<sub>Works in any modern browser · Installable as PWA · Fully offline after first load</sub>
+**No install. No signup. No build step.**  
+Just open the app and start focusing.
 
 <br/>
 
 <a href="https://firatnexus.github.io/Small-Steps-/">
-  <img src="https://img.shields.io/badge/Open%20the%20app-▶-267354?style=for-the-badge" alt="Open the app"/>
+  <img src="https://img.shields.io/badge/🚀%20Open%20the%20App-267354?style=for-the-badge&logoColor=white" alt="Open the App"/>
 </a>
+
+</div>
+
+<br/>
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+### ⚡
+**Instant**
+<br/>
+<sub>Loads in under a second</sub>
+
+</td>
+<td align="center" width="25%">
+
+### 📴
+**Offline-ready**
+<br/>
+<sub>Works without internet<br/>after first visit</sub>
+
+</td>
+<td align="center" width="25%">
+
+### 📱
+**Installable**
+<br/>
+<sub>Add to home screen<br/>as a PWA</sub>
+
+</td>
+<td align="center" width="25%">
+
+### 🔒
+**Private**
+<br/>
+<sub>No accounts, no servers<br/>data stays local</sub>
+
+</td>
+</tr>
+</table>
+
+<br/>
+
+<div align="center">
+
+<sub>💡 <b>Tip:</b> Works best in Chrome, Edge, Firefox, or Safari (mobile & desktop).</sub>
 
 </div>
 
