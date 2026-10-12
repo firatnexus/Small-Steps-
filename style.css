@@ -394,3 +394,117 @@ footer {
   .stats-grid { grid-template-columns: 1fr; }
   .week-chart { height: 120px; }
 }
+
+/* ============================================================
+   MOBİL İYİLEŞTİRMELERİ — v2.2
+   ============================================================ */
+
+/* 1. Üst bar: mobilde yan yana, sıkı */
+@media (max-width: 720px) {
+  .topbar {
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .language-control {
+    font-size: .85rem;
+    gap: 6px;
+  }
+  .lang-select {
+    max-width: 140px;
+    padding: 8px 26px 8px 10px;
+    font-size: .85rem;
+  }
+  .icon-button {
+    width: 40px;
+    height: 40px;
+    font-size: .95rem;
+  }
+}
+
+/* 2. Kart altbilgisi: mobilde alt alta */
+@media (max-width: 480px) {
+  .task-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    text-align: center;
+  }
+  .task-footer .text-button {
+    text-align: center;
+    padding: 8px 0;
+  }
+  .task-footer span {
+    font-size: .85rem;
+  }
+}
+
+/* 3. Kart başlığı: rozet hizası */
+.card-head {
+  align-items: center;
+}
+.card-head h2 {
+  line-height: 1.3;
+}
+.count-badge {
+  align-self: center;
+}
+
+/* 4. Intro: mobilde daha rahat okunsun */
+@media (max-width: 480px) {
+  .intro {
+    font-size: 1rem;
+    line-height: 1.7;
+    letter-spacing: -.005em;
+  }
+  h1 {
+    font-size: clamp(1.75rem, 8vw, 2.25rem);
+    line-height: 1.1;
+  }
+  .eyebrow {
+    font-size: .72rem;
+    letter-spacing: .1em;
+  }
+}
+
+/* 5. Görev formu: mobilde buton tam genişlik */
+@media (max-width: 420px) {
+  .task-form {
+    flex-wrap: wrap;
+  }
+  .task-form input {
+    flex-basis: 100%;
+  }
+  .task-form .primary {
+    width: 100%;
+    padding: 13px 16px;
+  }
+}
+
+/* 6. Filtreler: taşmasın */
+@media (max-width: 420px) {
+  .filters {
+    gap: 6px;
+  }
+  .filters .chip {
+    padding: 8px 14px;
+    font-size: .84rem;
+  }
+}
+
+/* 7. Genel boşluk optimizasyonu */
+@media (max-width: 720px) {
+  .wrap {
+    padding: 24px 0 40px;
+  }
+  .card {
+    padding: 18px;
+    border-radius: 18px;
+  }
+  header {
+    margin-bottom: 20px;
+  }
+  .grid {
+    gap: 14px;
+  }
+}
