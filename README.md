@@ -338,20 +338,20 @@ sequenceDiagram
 small-steps/
 │
 ├── 📄 index.html          # Structure + ARIA + i18n markers
-├── 🎨 styles.css          # Styles + 4 themes + responsive
-├── 🌍 translations.js     # 12 languages + i18n engine
-├── ⚙️ app.js              # Tasks · Timer · Theme · Stats
 ├── 📱 manifest.json       # PWA manifest
 ├── 🔄 sw.js               # Service worker (offline cache)
 ├── 🖼️ icon.svg            # App icon
-├── 🧪 tests.html          # In-browser i18n tests
+├── 🧪 test.html           # In-browser i18n tests
 ├── 📖 README.md           # This file
 ├── 📜 LICENSE             # MIT
 ├── 🚫 .gitignore          # Git ignore rules
 │
-└── 📁 docs/
-    └── 📁 screenshots/    # Screenshots (optional)
-        └── .gitkeep
+├── 📁 css/
+│   └── 🎨 styles.css      # Styles + 4 themes + responsive
+│
+└── 📁 js/
+    ├── 🌍 translations.js # 12 languages + i18n engine
+    └── ⚙️ app.js          # Tasks · Timer · Theme · Stats
 ```
 
 <table>
@@ -367,7 +367,6 @@ small-steps/
 <tr><td>⚙️ <b>JS</b></td><td>~570</td><td>State, tasks, timer, theme, stats</td><td>~18 KB</td></tr>
 <tr><td colspan="3" align="right"><b>Total</b></td><td><b>~66 KB</b></td></tr>
 </table>
-
 ---
 
 ## 🛠️ Customization
