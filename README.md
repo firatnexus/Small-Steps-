@@ -384,7 +384,7 @@ small-steps/
 ├── 🚫 .gitignore          # Git ignore rules
 │
 ├── 📁 css/
-│   └── 🎨 styles.css      # Styles + 4 themes + responsive
+│   └── 🎨 styles.css      # Style + 4 themes + responsive
 │
 └── 📁 js/
     ├── 🌍 translations.js # 12 languages + i18n engine
