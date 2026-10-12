@@ -3,6 +3,10 @@
    ------------------------------------------------------------
    12 dil sözlüğü + i18n motoru.
    app.js bu dosyayı window.i18n üzerinden kullanır.
+
+   NOT: İlk açılışta İngilizce başlar. Kullanıcı dil değiştirirse
+   seçim localStorage'a kaydedilir ve sonraki açılışlarda hatırlanır.
+   Tarayıcı dili dikkate alınmaz.
    ============================================================ */
 (() => {
   "use strict";
@@ -640,13 +644,17 @@
     return str;
   }
 
+  /* ------------------------------------------------------------
+     Dil başlangıcı:
+     - Kullanıcı daha önce bir dil seçtiyse → onu hatırla.
+     - Hiç seçim yapılmadıysa → İngilizce.
+     - Tarayıcı dili dikkate alınmaz.
+     ------------------------------------------------------------ */
   function detectInitialLang() {
     let stored = null;
     try { stored = localStorage.getItem(LANG_KEY); } catch {}
     if (stored && SUPPORTED_LANGS.includes(stored)) return stored;
-    const nav = (navigator.language || "").slice(0, 2).toLowerCase();
-    if (SUPPORTED_LANGS.includes(nav)) return nav;
-    return DEFAULT_LANG;
+    return "en";
   }
 
   function applyLanguage(lang) {
