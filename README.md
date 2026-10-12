@@ -15,7 +15,7 @@ Multi-file, zero dependencies, 12 languages, works offline.
 
 <br/>
 
-[![Live Demo](https://img.shields.io/badge/🌐%20Live%20Demo-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+[![Try It Online](https://img.shields.io/badge/🌐%20Live%20Demo-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
 
 <br/>
 
