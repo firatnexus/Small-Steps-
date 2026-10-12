@@ -3,7 +3,7 @@
 <div align="center">
 
 **Task list + Pomodoro timer.**  
-A single HTML file. Zero dependencies. 12 languages. Works offline.
+Multi-file, zero dependencies, 12 languages, works offline.
 
 <br/>
 
@@ -78,7 +78,7 @@ A single HTML file. Zero dependencies. 12 languages. Works offline.
 - 🔊 **Web Audio API** — file-free sound
 - 🔔 **Notification API** — desktop alerts
 - ⌨️ **Keyboard shortcuts**
-- 📦 **Single file** — no build step
+- 📦 **Multi-file** — no build step
 
 </td>
 </tr>
@@ -167,7 +167,7 @@ start index.html
 </tr>
 <tr>
 <td>💾 <b>Local file</b></td>
-<td>Download HTML → double-click</td>
+<td>Download the folder → open <code>index.html</code></td>
 <td>⭐</td>
 </tr>
 <tr>
@@ -177,7 +177,7 @@ start index.html
 </tr>
 <tr>
 <td>⚡ <b>Netlify Drop</b></td>
-<td>Drag file to <a href="https://app.netlify.com/drop">app.netlify.com/drop</a></td>
+<td>Drag the folder to <a href="https://app.netlify.com/drop">app.netlify.com/drop</a></td>
 <td>⭐</td>
 </tr>
 <tr>
@@ -198,6 +198,9 @@ The app can be installed on devices with browser support:
 | **Desktop (Chrome/Edge)** | ⊕ icon in the address bar |
 
 Once installed, it works offline.
+
+> [!NOTE]
+> Service workers require `http://` or `https://`. Opening via `file://` disables PWA features but the app still runs.
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -242,7 +245,7 @@ Once installed, it works offline.
 
 <br/>
 
-**Single step:** add a new key to the `TRANSLATIONS` object.
+**Single step:** add a new key to the `TRANSLATIONS` object in `translations.js`.
 
 ```js
 const TRANSLATIONS = {
@@ -334,17 +337,21 @@ sequenceDiagram
 ```
 small-steps/
 │
-├── 📄 index.html          # ⭐ Single file: HTML + CSS + JS + i18n
+├── 📄 index.html          # Structure + ARIA + i18n markers
+├── 🎨 styles.css          # Styles + 4 themes + responsive
+├── 🌍 translations.js     # 12 languages + i18n engine
+├── ⚙️ app.js              # Tasks · Timer · Theme · Stats
+├── 📱 manifest.json       # PWA manifest
+├── 🔄 sw.js               # Service worker (offline cache)
+├── 🖼️ icon.svg            # App icon
+├── 🧪 tests.html          # In-browser i18n tests
 ├── 📖 README.md           # This file
 ├── 📜 LICENSE             # MIT
 ├── 🚫 .gitignore          # Git ignore rules
 │
 └── 📁 docs/
     └── 📁 screenshots/    # Screenshots (optional)
-        ├── light.png
-        ├── dark.png
-        ├── mobile.png
-        └── rtl.png
+        └── .gitkeep
 ```
 
 <table>
@@ -562,7 +569,7 @@ No. The timer updates once per second; the browser throttles it further in the b
 </details>
 
 <details>
-<summary><b>📦 Why split into multiple files?</b></summary>
+<summary><b>📦 Why multiple files?</b></summary>
 <br/>
 Separation of concerns: HTML for structure, CSS for presentation, JS for behavior, and a dedicated i18n file. Easier to maintain, extend, and translate than a single monolithic file.
 </details>
@@ -654,9 +661,7 @@ Thanks to everyone who contributes to this project.
 
 <br/>
 
-<a href="../../graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=<user>/small-steps" alt="Contributors" />
-</a>
+<sub>Once the project is published on GitHub, a contributor wall will appear here.</sub>
 
 </div>
 
