@@ -484,9 +484,9 @@
   }
 
   function renderStats() {
-    const key = todayKey();
-    const doneToday = state.tasks.filter(t =>
-      t.done && t.doneAt && todayKey(new Date(t.doneAt)) === key).length;
+    // Gün içindeki tamamlanan görevler de geçmişten okunur:
+    // silinen görev gün sayacını düşürmesin (haftalık tabloyla tutarlı).
+    const doneToday = countTasksOnDay(todayKey());
     els.statsLine.textContent = t("statsLine", {
       done: doneToday, minutes: state.stats.focusMinutes
     });
@@ -617,7 +617,8 @@
       language: getLang(),
       theme: document.documentElement.dataset.theme || null,
       state: {
-        tasks: state.tasks, settings: state.settings, filter: state.filter
+        tasks: state.tasks, settings: state.settings, filter: state.filter,
+        stats: state.stats, activeTaskId: state.activeTaskId
       },
       history
     };
@@ -654,9 +655,25 @@
       state.settings.autoStart = s.autoStart === true;
       state.settings.sound     = s.sound !== false;
       state.filter = ["all", "active", "done"].includes(st.filter) ? st.filter : "all";
-      state.activeTaskId = null;
+      state.activeTaskId = typeof st.activeTaskId === "string" ? st.activeTaskId : null;
       state.search = "";
       els.search.value = "";
+
+      // Günlük sayaç da geri gelsin
+      if (st.stats && typeof st.stats === "object") {
+        state.stats.date = typeof st.stats.date === "string" ? st.stats.date : todayKey();
+        state.stats.focusMinutes = Number.isFinite(st.stats.focusMinutes)
+          ? Math.max(0, st.stats.focusMinutes) : 0;
+      } else {
+        state.stats = { date: todayKey(), focusMinutes: 0 };
+      }
+
+      // Zamanlayıcıyı yeni sürelerle eşitle
+      stopTicking();
+      timer.mode = "focus";
+      timer.total = durationFor("focus");
+      timer.remaining = timer.total;
+      timer.startDay = "";
 
       if (data.history && typeof data.history === "object" && !Array.isArray(data.history)) {
         history = {};
@@ -674,9 +691,13 @@
         setLanguage(data.language);
         els.langSelect.value = data.language;
       }
+      if (typeof data.theme === "string" && THEMES.includes(data.theme)) {
+        applyTheme(data.theme);
+        try { localStorage.setItem(THEME_KEY, data.theme); } catch {}
+      }
 
       ensureToday(); save(); syncSettingsInputs();
-      renderTasks(); renderTimerUI();
+      renderTasks(); renderTimerUI(); renderStats(); renderStatsCard(); renderFocusTask();
       showToast(t("importDone"));
     };
     reader.readAsText(file);
@@ -775,7 +796,9 @@
     if (timer.remaining <= 0) timer.remaining = timer.total;
     noteKey = "";
     timer.running = true;
-    timer.startDay = todayKey();
+    // Oturum günü yalnızca yeni oturumda belirlenir; duraklatıp
+    // devam ettirmek günü değiştirmez (gece yarısı kredisi doğru kalsın).
+    if (!timer.startDay) timer.startDay = todayKey();
     timer.endAt = Date.now() + timer.remaining * 1000;
     timer.handle = setInterval(tick, 200);
     requestNotificationPermission();
@@ -799,6 +822,7 @@
     timer.mode = mode;
     timer.total = durationFor(mode);
     timer.remaining = timer.total;
+    timer.startDay = ""; // yeni mod = yeni oturum
     noteKey = options.noteKey || "";
     renderTimerUI();
     if (options.autoStart) startTimer();
@@ -814,15 +838,22 @@
       // oturum sırasında değişse veya gece yarısı geçilse bile doğru kalır.
       const minutes = Math.max(1, Math.round(timer.total / 60));
       const creditDay = timer.startDay || todayKey();
+      timer.startDay = "";
 
-      state.stats.focusMinutes += minutes;
       recordHistory(creditDay, "focus", minutes);
 
+      // Gün içinde sayaç: yalnızca oturum bugün başladıysa artar.
+      // Dün başlayan oturumun kredisi geçmişe zaten yazıldı.
+      if (creditDay === todayKey()) {
+        state.stats.focusMinutes += minutes;
+        ensureToday();
+      }
+
       const task = activeTask();
-      if (task) { task.focus = (task.focus || 0) + minutes; save(); }
+      if (task) { task.focus = (task.focus || 0) + minutes; }
 
       timer.cycle += 1;
-      ensureToday(); save(); renderStats(); renderStatsCard(); renderTasks();
+      save(); renderStats(); renderStatsCard(); renderTasks();
 
       const longBreak = timer.cycle % state.settings.longEvery === 0;
       notify(t("notifFocusTitle"),
@@ -936,6 +967,7 @@
       stopTicking();
       timer.total = durationFor(timer.mode);
       timer.remaining = timer.total;
+      timer.startDay = ""; // sıfırla = yeni oturum
       noteKey = ""; renderTimerUI();
     });
     els.skip.addEventListener("click", () => {
