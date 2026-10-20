@@ -296,13 +296,18 @@
     save(); renderTasks(); renderFocusTask();
   }
 
+  /* Aramada Türkçe İ/ı ve benzeri harfler için katlamalı eşleştirme */
+  const foldText = (s) => String(s)
+    .replace(/İ/g, "i").replace(/I/g, "i")
+    .toLowerCase().replace(/ı/g, "i");
+
   function visibleTasks() {
     let tasks = state.tasks;
     if (state.filter === "active") tasks = tasks.filter(t => !t.done);
     else if (state.filter === "done") tasks = tasks.filter(t => t.done);
 
-    const q = state.search.trim().toLowerCase();
-    if (q) tasks = tasks.filter(t => t.text.toLowerCase().includes(q));
+    const q = foldText(state.search.trim());
+    if (q) tasks = tasks.filter(t => foldText(t.text).includes(q));
     return tasks;
   }
 
@@ -388,7 +393,7 @@
     if (task.focus > 0) {
       const pill = document.createElement("span");
       pill.className = "focus-pill";
-      pill.textContent = `${task.focus}${t("unitMin").trim()}`;
+      pill.textContent = `${task.focus} ${t("unitMin").trim()}`;
       pill.title = t("focusingOn");
       meta.appendChild(pill);
     }
@@ -400,7 +405,7 @@
     const prioBtn = makeIconButton(
       t(PRIO_KEYS[task.priority]), "▲", "prio-btn",
       () => {
-        task.priority = (task.priority + 1) % 4;
+        task.priority = ((task.priority || 0) + 1) % 4;
         save(); renderTasks();
       });
     prioBtn.dataset.level = String(task.priority);
@@ -877,7 +882,8 @@
       if (!text) return;
       state.tasks.unshift({
         id: uid(), text: text.slice(0, 120), done: false,
-        createdAt: Date.now(), doneAt: null
+        createdAt: Date.now(), doneAt: null,
+        priority: 0, focus: 0
       });
       save(); renderTasks();
       els.form.reset(); els.input.focus();
