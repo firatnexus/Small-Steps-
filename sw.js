@@ -1,13 +1,13 @@
 /* ============================================================
    Minik Adımlar · sw.js
-   Basit "cache-first + network-fallback" service worker.
+   Cache-first (varlıklar) + network-first (HTML) service worker.
    ============================================================ */
-const CACHE = "minik-adimlar-v1";
+const CACHE = "minik-adimlar-v3";
 
 const ASSETS = [
   "./",
   "./index.html",
-  "./styles.css",
+  "./style.css",
   "./translations.js",
   "./app.js",
   "./manifest.json",
@@ -19,6 +19,7 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE)
       .then((cache) => cache.addAll(ASSETS))
       .then(() => self.skipWaiting())
+      .catch(() => {}) // tek varlık hata verse bile kurulum devam etsin
   );
 });
 
@@ -36,6 +37,21 @@ self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET") return;
   if (new URL(req.url).origin !== self.location.origin) return;
+
+  // HTML istekleri: önce ağ — böylece güncellemeler hemen ulaşır,
+  // çevrimdışında önbellekteki kopya gösterilir.
+  if (req.mode === "navigate" || req.destination === "document") {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(req, copy));
+          return res;
+        })
+        .catch(() => caches.match(req).then((c) => c || caches.match("./index.html")))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(req).then((cached) => {

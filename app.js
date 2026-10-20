@@ -56,8 +56,10 @@
   const els = {
     langSelect:  $("#lang-select"),
     themeToggle: $("#theme-toggle"),
+    helpToggle:  $("#help-toggle"),
     form:        $("#task-form"),
     input:       $("#task-input"),
+    search:      $("#task-search"),
     list:        $("#task-list"),
     empty:       $("#empty-state"),
     count:       $("#task-count"),
@@ -81,9 +83,21 @@
     setEvery:    $("#set-every"),
     setAuto:     $("#set-auto"),
     setSound:    $("#set-sound"),
+    // Odak görevi
+    focusTask:       $("#focus-task"),
+    focusTaskName:   $("#focus-task-name"),
+    focusTaskClear:  $("#focus-task-clear"),
+    // Veri
+    exportData:  $("#export-data"),
+    importData:  $("#import-data"),
+    importFile:  $("#import-file"),
+    // Kısayollar
+    shortcutsDialog: $("#shortcuts-dialog"),
+    shortcutsClose:  $("#shortcuts-close"),
     // İstatistik
     weekChart:   $("#week-chart"),
     weekBadge:   $("#week-badge"),
+    heatmap:     $("#heatmap"),
     statFocus:   $("#stat-focus-week"),
     statTasks:   $("#stat-tasks-week"),
     statStreak:  $("#stat-streak")
@@ -98,14 +112,17 @@
       id: typeof raw.id === "string" && raw.id ? raw.id : uid(),
       text, done: raw.done === true,
       createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
-      doneAt: Number.isFinite(raw.doneAt) ? raw.doneAt : (raw.done ? Date.now() : null)
+      doneAt: Number.isFinite(raw.doneAt) ? raw.doneAt : (raw.done ? Date.now() : null),
+      priority: clampInt(raw.priority, 0, 3, 0),
+      focus: Number.isFinite(raw.focus) ? Math.max(0, Math.round(raw.focus)) : 0
     };
   }
 
   function loadState() {
     const fallback = {
       tasks: [], settings: { ...DEFAULT_SETTINGS },
-      stats: { date: todayKey(), focusMinutes: 0 }, filter: "all"
+      stats: { date: todayKey(), focusMinutes: 0 }, filter: "all",
+      search: "", activeTaskId: null
     };
 
     let raw = null;
@@ -138,12 +155,32 @@
         focusMinutes: Number.isFinite(raw.stats?.focusMinutes)
           ? Math.max(0, raw.stats.focusMinutes) : 0
       },
-      filter: ["all", "active", "done"].includes(raw.filter) ? raw.filter : "all"
+      filter: ["all", "active", "done"].includes(raw.filter) ? raw.filter : "all",
+      search: typeof raw.search === "string" ? raw.search.slice(0, 80) : "",
+      activeTaskId: typeof raw.activeTaskId === "string" ? raw.activeTaskId : null,
+      migratedDone: raw.migratedDone === true
     };
   }
 
   let state = loadState();
   ensureToday();
+
+  /* v3 geçişi: tamamlanan görevler artık geçmişe kaydediliyor.
+     Eski kullanıcıların mevcut görevleri silinirse istatistikten düşmesin
+     diye doneAt tarihlerinden tek seferlik geri doldurma yapılır. */
+  function backfillDoneHistory() {
+    if (state.migratedDone) return;
+    state.migratedDone = true;
+    for (const task of state.tasks) {
+      if (task.done && task.doneAt) {
+        const day = todayKey(new Date(task.doneAt));
+        if (!history[day]) history[day] = { focus: 0, done: 0 };
+        history[day].done = (history[day].done || 0) + 1;
+      }
+    }
+    saveHistory();
+    save();
+  }
 
   function ensureToday() {
     const key = todayKey();
@@ -169,6 +206,7 @@
     } catch { return {}; }
   }
   let history = loadHistory();
+  backfillDoneHistory();
 
   function saveHistory() {
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch {}
@@ -186,9 +224,9 @@
   }
 
   function countTasksOnDay(dayKeyStr) {
-    return state.tasks.filter(t =>
-      t.done && t.doneAt && todayKey(new Date(t.doneAt)) === dayKeyStr
-    ).length;
+    // v3: tamamlanmış görevler silinse bile istatistikte kalsın diye
+    // artık görev listesinden değil, geçmiş kaydından okunuyor.
+    return history[dayKeyStr]?.done || 0;
   }
 
   /* ---------- Tema ---------- */
@@ -246,10 +284,26 @@
   }
 
   /* ---------- Görevler ---------- */
+  const PRIO_KEYS = ["prioNone", "prioLow", "prioMed", "prioHigh"];
+
+  function activeTask() {
+    if (!state.activeTaskId) return null;
+    return state.tasks.find(t => t.id === state.activeTaskId) || null;
+  }
+
+  function setActiveTask(id) {
+    state.activeTaskId = id;
+    save(); renderTasks(); renderFocusTask();
+  }
+
   function visibleTasks() {
-    if (state.filter === "active") return state.tasks.filter(t => !t.done);
-    if (state.filter === "done")   return state.tasks.filter(t => t.done);
-    return state.tasks;
+    let tasks = state.tasks;
+    if (state.filter === "active") tasks = tasks.filter(t => !t.done);
+    else if (state.filter === "done") tasks = tasks.filter(t => t.done);
+
+    const q = state.search.trim().toLowerCase();
+    if (q) tasks = tasks.filter(t => t.text.toLowerCase().includes(q));
+    return tasks;
   }
 
   function makeIconButton(label, glyph, extra, onClick) {
@@ -296,7 +350,7 @@
 
   function buildTaskItem(task) {
     const item = document.createElement("li");
-    item.className = `task${task.done ? " done" : ""}`;
+    item.className = `task${task.done ? " done" : ""}${task.priority ? ` prio-${task.priority}` : ""}`;
     item.dataset.id = task.id;
 
     const checkbox = document.createElement("input");
@@ -306,13 +360,19 @@
       task.done ? t("taskAriaUndo", { text: task.text })
                 : t("taskAriaComplete", { text: task.text }));
     checkbox.addEventListener("change", () => {
+      const wasDoneAt = task.doneAt;
       task.done = checkbox.checked;
       task.doneAt = task.done ? Date.now() : null;
       if (task.done) {
+        recordHistory(todayKey(), "done", 1);
         const total = state.tasks.filter(t => t.done).length;
         if (total === state.tasks.length && state.tasks.length > 1) {
           showToast(t("toastAllDone"));
         }
+      } else if (wasDoneAt && todayKey(new Date(wasDoneAt)) === todayKey()) {
+        // geri alma: aynı gün tamamlanmışsa sayıyı geri al
+        const day = todayKey();
+        if ((history[day]?.done || 0) > 0) recordHistory(day, "done", -1);
       }
       save(); renderTasks();
     });
@@ -323,14 +383,44 @@
     text.title = t("taskEditTitle");
     text.addEventListener("dblclick", () => startEdit(item, task));
 
+    const meta = document.createElement("span");
+    meta.className = "task-meta";
+    if (task.focus > 0) {
+      const pill = document.createElement("span");
+      pill.className = "focus-pill";
+      pill.textContent = `${task.focus}${t("unitMin").trim()}`;
+      pill.title = t("focusingOn");
+      meta.appendChild(pill);
+    }
+
     const actions = document.createElement("div");
     actions.className = "task-actions";
+
+    // Öncelik döngüsü: yok → düşük → orta → yüksek
+    const prioBtn = makeIconButton(
+      t(PRIO_KEYS[task.priority]), "▲", "prio-btn",
+      () => {
+        task.priority = (task.priority + 1) % 4;
+        save(); renderTasks();
+      });
+    prioBtn.dataset.level = String(task.priority);
+    prioBtn.setAttribute("aria-label", t(PRIO_KEYS[task.priority]));
+    prioBtn.title = t(PRIO_KEYS[task.priority]);
+
+    // Odak görevi seçimi
+    const focusBtn = makeIconButton(t("focusBtnAria"), "◎", "focus-btn", () => {
+      setActiveTask(state.activeTaskId === task.id ? null : task.id);
+    });
+    focusBtn.classList.toggle("is-active", state.activeTaskId === task.id);
+
     actions.append(
+      prioBtn,
+      focusBtn,
       makeIconButton(t("taskAriaEdit"), "✏️", "", () => startEdit(item, task)),
       makeIconButton(t("taskAriaDelete"), "🗑️", "danger", () => removeTask(task))
     );
 
-    item.append(checkbox, text, actions);
+    item.append(checkbox, text, meta, actions);
     return item;
   }
 
@@ -339,9 +429,10 @@
     if (index === -1) return;
     state.tasks.splice(index, 1);
     save(); renderTasks();
+    if (state.activeTaskId === task.id) renderFocusTask();
     showToast(t("toastDeleted"), t("toastUndo"), () => {
       state.tasks.splice(index, 0, task);
-      save(); renderTasks();
+      save(); renderTasks(); renderFocusTask();
     });
   }
 
@@ -353,8 +444,10 @@
     const done = state.tasks.filter(t => t.done).length;
 
     els.empty.textContent = tasks.length === 0
-      ? t(state.filter === "active" ? "emptyActive"
-        : state.filter === "done" ? "emptyDone" : "emptyAll")
+      ? t(state.search.trim()
+          ? "emptySearch"
+          : state.filter === "active" ? "emptyActive"
+          : state.filter === "done" ? "emptyDone" : "emptyAll")
       : "";
     els.empty.hidden = tasks.length > 0;
 
@@ -369,6 +462,20 @@
 
     renderStats();
     renderStatsCard();
+    renderFocusTask();
+  }
+
+  /* ---------- Odak görevi ---------- */
+  function renderFocusTask() {
+    const task = activeTask();
+    if (!task) {
+      if (!state.activeTaskId) { els.focusTask.hidden = true; return; }
+      state.activeTaskId = null;
+      els.focusTask.hidden = true;
+      return;
+    }
+    els.focusTaskName.textContent = task.text;
+    els.focusTask.hidden = false;
   }
 
   function renderStats() {
@@ -459,6 +566,125 @@
     els.statTasks.textContent = String(totalTasks);
     els.statStreak.textContent = String(calculateStreak());
     els.weekBadge.textContent = `${totalFocus}${t("unitMin")}`;
+
+    renderHeatmap();
+  }
+
+  /* ---------- 90 günlük ısı haritası ---------- */
+  function renderHeatmap() {
+    const weeks = 13;
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(start.getDate() - (weeks * 7 - 1));
+
+    const levelFor = (focus) =>
+      focus <= 0 ? 0 : focus < 30 ? 1 : focus < 60 ? 2 : focus < 120 ? 3 : 4;
+
+    const columns = [];
+    for (let w = 0; w < weeks; w++) {
+      const col = document.createElement("div");
+      col.className = "heatmap-col";
+
+      for (let d = 0; d < 7; d++) {
+        const idx = w * 7 + d;
+        const date = new Date(start);
+        date.setDate(start.getDate() + idx);
+
+        const cell = document.createElement("div");
+        if (date > today) { cell.className = "heat-cell is-future"; col.appendChild(cell); continue; }
+
+        const key = todayKey(date);
+        const focus = history[key]?.focus || 0;
+        cell.className = `heat-cell lv-${levelFor(focus)}`;
+        cell.title = `${date.toLocaleDateString(getLang())} — ${focus}${t("unitMin")}`;
+        col.appendChild(cell);
+      }
+      columns.push(col);
+    }
+    els.heatmap.replaceChildren(...columns);
+  }
+
+  /* ---------- Yedekleme ---------- */
+  function exportBackup() {
+    const data = {
+      app: "small-steps", version: 3,
+      exportedAt: new Date().toISOString(),
+      language: getLang(),
+      theme: document.documentElement.dataset.theme || null,
+      state: {
+        tasks: state.tasks, settings: state.settings, filter: state.filter
+      },
+      history
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `small-steps-backup-${todayKey()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  function importBackup(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      let data = null;
+      try { data = JSON.parse(String(reader.result)); } catch { data = null; }
+
+      const st = data?.state && Array.isArray(data.state.tasks) ? data.state : data;
+      const ok = data && typeof data === "object" &&
+        st && Array.isArray(st.tasks) && st.settings && typeof st.settings === "object";
+
+      if (!ok) { showToast(t("importInvalid")); return; }
+      if (!window.confirm(t("importConfirm"))) return;
+
+      state.tasks = st.tasks.map(normalizeTask).filter(Boolean);
+      const s = st.settings;
+      state.settings.focus     = clampInt(s.focus, 1, 90, DEFAULT_SETTINGS.focus);
+      state.settings.short     = clampInt(s.short, 1, 30, DEFAULT_SETTINGS.short);
+      state.settings.long      = clampInt(s.long, 1, 60, DEFAULT_SETTINGS.long);
+      state.settings.longEvery = clampInt(s.longEvery, 2, 8, DEFAULT_SETTINGS.longEvery);
+      state.settings.autoStart = s.autoStart === true;
+      state.settings.sound     = s.sound !== false;
+      state.filter = ["all", "active", "done"].includes(st.filter) ? st.filter : "all";
+      state.activeTaskId = null;
+      state.search = "";
+      els.search.value = "";
+
+      if (data.history && typeof data.history === "object" && !Array.isArray(data.history)) {
+        history = {};
+        for (const [day, rec] of Object.entries(data.history)) {
+          if (typeof rec !== "object" || rec === null) continue;
+          history[day] = {
+            focus: Math.max(0, Math.round(Number(rec.focus) || 0)),
+            done: Math.max(0, Math.round(Number(rec.done) || 0))
+          };
+        }
+        saveHistory();
+      }
+
+      if (typeof data.language === "string" && window.i18n.SUPPORTED_LANGS.includes(data.language)) {
+        setLanguage(data.language);
+        els.langSelect.value = data.language;
+      }
+
+      ensureToday(); save(); syncSettingsInputs();
+      renderTasks(); renderTimerUI();
+      showToast(t("importDone"));
+    };
+    reader.readAsText(file);
+  }
+
+  /* ---------- Kısayollar ---------- */
+  function openShortcuts() {
+    if (typeof els.shortcutsDialog.showModal === "function") els.shortcutsDialog.showModal();
+    else els.shortcutsDialog.setAttribute("open", "");
+  }
+  function closeShortcuts() {
+    if (els.shortcutsDialog.open) els.shortcutsDialog.close();
+    else els.shortcutsDialog.removeAttribute("open");
   }
 
   /* ---------- Zamanlayıcı ---------- */
@@ -466,7 +692,8 @@
     mode: "focus",
     total: DEFAULT_SETTINGS.focus * 60,
     remaining: DEFAULT_SETTINGS.focus * 60,
-    running: false, endAt: 0, cycle: 0, handle: null
+    running: false, endAt: 0, cycle: 0, handle: null,
+    startDay: ""          // oturumun başladığı gün (gece yarısı geçişlerinde doğru kredi)
   };
   let noteKey = "";
   let audioCtx = null;
@@ -543,6 +770,7 @@
     if (timer.remaining <= 0) timer.remaining = timer.total;
     noteKey = "";
     timer.running = true;
+    timer.startDay = todayKey();
     timer.endAt = Date.now() + timer.remaining * 1000;
     timer.handle = setInterval(tick, 200);
     requestNotificationPermission();
@@ -577,10 +805,19 @@
     chime();
 
     if (finished === "focus") {
-      state.stats.focusMinutes += state.settings.focus;
-      recordHistory(todayKey(), "focus", state.settings.focus);
+      // Kredi, oturumun başladığı süreye ve güne göre — ayarlar
+      // oturum sırasında değişse veya gece yarısı geçilse bile doğru kalır.
+      const minutes = Math.max(1, Math.round(timer.total / 60));
+      const creditDay = timer.startDay || todayKey();
+
+      state.stats.focusMinutes += minutes;
+      recordHistory(creditDay, "focus", minutes);
+
+      const task = activeTask();
+      if (task) { task.focus = (task.focus || 0) + minutes; save(); }
+
       timer.cycle += 1;
-      ensureToday(); save(); renderStats(); renderStatsCard();
+      ensureToday(); save(); renderStats(); renderStatsCard(); renderTasks();
 
       const longBreak = timer.cycle % state.settings.longEvery === 0;
       notify(t("notifFocusTitle"),
@@ -651,6 +888,28 @@
       if (!chip) return;
       state.filter = chip.dataset.filter;
       save(); renderTasks();
+    });
+
+    els.search.addEventListener("input", () => {
+      state.search = els.search.value.slice(0, 80);
+      save(); renderTasks();
+    });
+
+    els.focusTaskClear.addEventListener("click", () => setActiveTask(null));
+
+    els.helpToggle.addEventListener("click", openShortcuts);
+    els.shortcutsClose.addEventListener("click", closeShortcuts);
+    els.shortcutsDialog.addEventListener("click", (e) => {
+      // kart dışına tıklayınca kapat
+      if (e.target === els.shortcutsDialog) closeShortcuts();
+    });
+
+    els.exportData.addEventListener("click", exportBackup);
+    els.importData.addEventListener("click", () => els.importFile.click());
+    els.importFile.addEventListener("change", () => {
+      const file = els.importFile.files?.[0];
+      els.importFile.value = "";
+      if (file) importBackup(file);
     });
 
     els.clearDone.addEventListener("click", () => {
@@ -735,6 +994,11 @@
       }
       if (e.key === "n" || e.key === "N") {
         e.preventDefault(); els.input.focus();
+        return;
+      }
+      if (e.key === "?" || (e.key === "/" && e.shiftKey)) {
+        e.preventDefault();
+        els.shortcutsDialog.open ? closeShortcuts() : openShortcuts();
       }
     });
 
@@ -774,6 +1038,7 @@
     buildLangSelect(els.langSelect);
     initTheme();
     syncSettingsInputs();
+    els.search.value = state.search || "";
 
     timer.mode = "focus";
     timer.total = durationFor("focus");

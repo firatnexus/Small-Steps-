@@ -516,3 +516,101 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
   .mode-chips { flex-wrap: nowrap; gap: 6px; }
   .mode-chips .chip { flex: 1 1 auto; padding: 10px 8px; font-size: .84rem; white-space: nowrap; }
 }
+
+/* ============================================================
+   v3 — arama, öncelik, odak görevi, ısı haritası, yedek, kısayollar
+   ============================================================ */
+
+/* Arama */
+.search-row { margin-top: 10px; }
+.search-input {
+  width: 100%; padding: 10px 13px;
+  border: 1px solid var(--line); border-radius: 11px;
+  background: var(--field); color: var(--ink); outline: none;
+}
+.search-input::placeholder { color: var(--muted); opacity: .8; }
+.search-input::-webkit-search-cancel-button { cursor: pointer; }
+.search-input:focus-visible { outline: 3px solid #84c5a2; outline-offset: 2px; }
+
+/* Öncelik */
+.prio-btn { color: var(--muted); }
+.prio-btn[data-level="1"] { color: var(--break); }
+.prio-btn[data-level="2"] { color: #c08a1e; }
+.prio-btn[data-level="3"] { color: var(--danger); }
+.task.prio-1 { border-inline-start: 3px solid var(--break); }
+.task.prio-2 { border-inline-start: 3px solid #c08a1e; }
+.task.prio-3 { border-inline-start: 3px solid var(--danger); }
+
+/* Odak görevi düğmesi */
+.focus-btn { font-size: 1.05rem; }
+.focus-btn.is-active { color: var(--green); background: var(--soft); }
+.task-meta { flex: none; display: flex; align-items: center; gap: 6px; }
+.focus-pill {
+  padding: 3px 9px; border-radius: 999px;
+  background: var(--soft); color: var(--green-dark);
+  font-size: .74rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Zamanlayıcı kartındaki odak görevi */
+.focus-task {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  margin: 0 0 6px; padding: 9px 13px;
+  border: 1px dashed var(--line-strong); border-radius: 12px;
+  background: var(--soft);
+}
+.focus-task-label {
+  flex: none; color: var(--muted);
+  font-size: .74rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase;
+}
+.focus-task-name {
+  min-width: 0; overflow-wrap: anywhere; text-align: start;
+  font-weight: 650; color: var(--ink);
+}
+.focus-clear { flex: none; width: 26px; height: 26px; font-size: .8rem; }
+
+/* Isı haritası */
+.heatmap-block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+.heatmap-head h3 { margin: 0 0 12px; font-size: .95rem; letter-spacing: -.01em; }
+.heatmap { display: flex; gap: 4px; align-items: flex-start; }
+.heatmap-col { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; }
+.heat-cell {
+  aspect-ratio: 1; width: 100%; border-radius: 3px;
+  background: var(--soft);
+}
+.heat-cell.lv-1 { background: color-mix(in oklab, var(--green) 30%, var(--soft)); }
+.heat-cell.lv-2 { background: color-mix(in oklab, var(--green) 55%, var(--soft)); }
+.heat-cell.lv-3 { background: color-mix(in oklab, var(--green) 80%, var(--soft)); }
+.heat-cell.lv-4 { background: var(--green); }
+.heat-cell.is-future { opacity: 0; }
+@media (max-width: 560px) { .heatmap { gap: 3px; } .heatmap-col { gap: 3px; } }
+
+/* Veri yedekleme */
+.data-actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 12px; }
+
+/* Kısayol penceresi */
+.shortcuts-dialog {
+  border: 0; padding: 0; background: transparent;
+  max-width: min(92vw, 420px); width: 100%;
+}
+.shortcuts-dialog::backdrop { background: #20312b66; backdrop-filter: blur(2px); }
+.shortcuts-card {
+  padding: 22px; border: 1px solid var(--line); border-radius: 20px;
+  background: var(--card); box-shadow: 0 18px 50px #20312b22;
+}
+.shortcuts-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.shortcuts-head h2 { margin: 0; font-size: 1.1rem; }
+.shortcut-list {
+  display: grid; grid-template-columns: auto 1fr; gap: 10px 16px;
+  margin: 16px 0 4px; align-items: center;
+}
+.shortcut-list kbd {
+  padding: 4px 9px; border: 1px solid var(--line-strong); border-bottom-width: 2px;
+  border-radius: 7px; background: var(--field); color: var(--ink);
+  font-family: inherit; font-size: .82rem; font-weight: 700;
+}
+.shortcut-list dd { margin: 0; color: var(--muted); font-size: .92rem; }
+.shortcut-hint { margin: 14px 0 0; color: var(--muted); font-size: .85rem; }
+
+/* Yardım düğmesi */
+#help-toggle { font-weight: 750; }
