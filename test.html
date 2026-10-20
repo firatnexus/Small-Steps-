@@ -245,6 +245,36 @@
     return `${keys.length} anahtar × 12 dil`;
   });
 
+  test("v3 anahtarları tüm dillerde var", () => {
+    const keys = ["searchPlaceholder","prioNone","prioLow","prioMed","prioHigh",
+                  "focusBtnAria","focusingOn","clearFocusAria","emptySearch",
+                  "heatmapHeading","heatmapAria","dataHeading","exportData","importData",
+                  "importDone","importInvalid","importConfirm","shortcutsTitle",
+                  "scStartPause","scNew","scHelp","scEdit","scClose"];
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const k of keys) {
+        if (!TRANSLATIONS[code][k]) eksik.push(`${code}.${k}`);
+      }
+    }
+    assert(eksik.length === 0, `Eksik: ${eksik.join(", ")}`);
+    return `${keys.length} anahtar × 12 dil`;
+  });
+
+  test("Placeholder'lar tüm dillerde aynı", () => {
+    const ph = (s) => (String(s).match(/\{(\w+)\}/g) || []).sort().join(",");
+    const uyusmayan = [];
+    for (const key of Object.keys(TRANSLATIONS.en)) {
+      const ref = ph(TRANSLATIONS.en[key]);
+      for (const code of SUPPORTED_LANGS) {
+        if (code === "en") continue;
+        if (ph(TRANSLATIONS[code][key]) !== ref) uyusmayan.push(`${code}.${key}`);
+      }
+    }
+    assert(uyusmayan.length === 0, `Uyuşmayan: ${uyusmayan.slice(0, 10).join(", ")}`);
+    return "tüm placeholder setleri eşit";
+  });
+
   test("Hiçbir çeviride boş string yok", () => {
     const bos = [];
     for (const code of SUPPORTED_LANGS) {

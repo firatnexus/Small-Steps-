@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sözdizimi denetimi
+        run: |
+          node --check app.js
+          node --check sw.js
+          node --check translations.js
+          node --check tools/check-translations.js
+
+      - name: Çeviri bütünlüğü
+        run: node tools/check-translations.js
