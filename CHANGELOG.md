@@ -1,36 +1,53 @@
 # Changelog
 
+## 3.0.1 — 2026-10-20
+
+Doğrulama turunda (v3.0 kod incelemesi) yakalanan doğruluk ve sunum düzeltmeleri:
+
+### Düzeltildi
+
+- **Yedek eksiksiz geri gelmiyordu:** içe aktarma artık temayı, günlük odak sayacını ve seçili görevi de geri yüklüyor; zamanlayıcı yeni sürelerle eşitleniyor
+- **Gece yarısı muhasebesi:** duraklatıp devam ettirmek oturum gününü artık değiştirmiyor; yeni mod/sıfırlama yeni oturum sayılıyor. Gece yarısını geçen oturumun kredisi yalnızca geçmişe yazılıyor, bugünün sayacı şişirilmiyor (sahte saatle uçtan uca doğrulandı)
+- **Alt bilgi tutarsızlığı:** "Bugün: N görev" sayacı da artık geçmişten okunuyor — silinen tamamlanmış görev gün sayacını düşürmüyor
+- **Service worker:** kurulum hatalarını gizleyen sessiz `catch` kaldırıldı; önbellek adı sürümle eşitlendi (varlık değişikliklerinde eski önbellek sorunu notu eklendi)
+- **README:** mobil ekran görüntüsü mobil düzen düzeltmesinden önce alınmıştı — güncel kodla yeniden üretildi; belgeler Türkçe birincil hale geldi (İngilizce sürüm: README.en.md)
+
+### Doğrulandı
+
+- Gerçek çevrimdışı mod: SW kurulumu + çevrimdışı yeniden yükleme + görev ekleme + zamanlayıcı (ağ kesikken uçtan uca test edildi)
+- Yedek gidiş-dönüşü: dışa aktar → tüm veriyi sil → içe aktar → görevler, tema, günlük sayaç, dil geri geldi
+
 ## 3.0 — 2026-10-20
 
-The biggest release yet: Small Steps grows from a timer + list into a small focus workspace.
+Şimdiye kadarki en büyük sürüm: Small Steps bir zamanlayıcı + liste ikilisinden küçük bir odak çalışma alanına dönüştü.
 
-### Added
+### Eklendi
 
-- **Task-linked focus** — select a task (◎ button) and every completed focus session credits its minutes to that task, shown as a pill on the task row and in the timer card
-- **Priorities** — none / low / medium / high, with colored accent on the task row
-- **Task search** — instant filtering, diacritic-friendly matching (Turkish İ/ı, etc.)
-- **90-day focus heatmap** — GitHub-style consistency grid under the weekly chart
-- **JSON backup** — export/import everything (tasks, settings, history, language) from Settings → Your data
-- **Keyboard shortcut help** — press `?` or the toolbar button
-- 25 new translation strings × 12 languages
-- CI workflow: syntax checks + translation key/placeholder parity
+- **Göreve bağlı odak** — görev seç (◎), tamamlanan her odak oturumu dakikalarını o göreve işliyor; görev satırında ve zamanlayıcı kartında görünür
+- **Öncelikler** — yok / düşük / orta / yüksek, renkli şeritle
+- **Görev araması** — anlık filtreleme, aksan dostu eşleştirme (Türkçe İ/ı dahil)
+- **90 günlük odak ısı haritası** — haftalık grafiğin altında GitHub tarzı tutarlılık ızgarası
+- **JSON yedekleme** — Ayarlar → Verilerin: görevler, ayarlar, geçmiş, tema ve dilin tam yedeği
+- **Klavye kısayolu yardımı** — `?` tuşu veya araç çubuğu düğmesi
+- 25 yeni çeviri dizgisi × 12 dil
+- CI iş akışı: sözdizimi denetimleri + çeviri anahtar/yer tutucu paritesi
 
-### Fixed
+### Düzeltildi
 
-- **Service worker never installed** — it tried to cache `styles.css` but the file is `style.css`; offline mode silently failed since the first release
-- **Stats vanished when tasks were deleted** — completions are now recorded in a daily history log, so weekly stats and streaks survive deletion/clearing
-- **Focus credit used the wrong duration** — if you changed the focus-length setting mid-session, the wrong amount was credited; sessions now record the duration and day they started with (also fixes midnight rollover)
-- **RTL badge direction** — the "1 / 4" counter no longer renders reversed in Arabic
-- Empty focus-task chip no longer renders when no task is selected
-- Task text no longer breaks mid-word on narrow phones (actions moved to a second row)
-- Turkish search matching ("ikinci" now finds "İkinci")
+- **Service worker hiç kurulamıyordu** — `styles.css` dosyasını önbelleğe almaya çalışıyordu ama dosyanın adı `style.css`; çevrimdışı mod sessizce çalışmıyordu
+- **Görev silinince istatistikler kayboluyordu** — tamamlamalar artık günlük geçmiş günlüğüne kaydediliyor; haftalık istatistikler ve seriler silme/temizlemeden etkilenmiyor
+- **Odak kredisi yanlış süreyi kullanıyordu** — odak süresi ayarını oturum ortasında değiştirirsen yanlış miktar yazılıyordu; oturumlar artık başladıkları süre ve günle kaydediliyor (gece yarısı geçişi düzeltmesi dahil)
+- **RTL rozet yönü** — "1 / 4" sayacı Arapça'da tersten dizilmiyor
+- Görev seçili değilken boş odak çipi görünmüyor
+- Dar telefonlarda görev metni kelime ortasından bölünmüyor (düğmeler alt satıra taşınıyor)
+- Türkçe arama eşleştirmesi ("ikinci" artık "İkinci"yi buluyor)
 
-### Changed
+### Değiştirildi
 
-- Service worker: HTML requests are network-first so updates arrive promptly; assets remain cache-first per release (cache name bumped per version)
-- Mobile task rows: two-line layout for readable titles
-- README rewritten with screenshots and accurate feature list
+- Service worker: HTML istekleri ağ-öncelikli (güncellemeler anında ulaşır), varlıklar sürüm başına önbellek-öncelikli
+- Mobil görev satırları: okunabilir metin için iki satır düzen
+- README ekran görüntüleri ve doğru özellik listesiyle yeniden yazıldı
 
 ## 2.1
 
-- Weekly stats, streak counter, 4 themes, 12 languages, PWA offline support
+- Haftalık istatistikler, seri sayacı, 4 tema, 12 dil, PWA çevrimdışı desteği

@@ -2,80 +2,84 @@
 
 <div align="center">
 
-**A calm, offline-first focus workspace: task list + Pomodoro timer + progress history.**
-Zero dependencies · 12 languages · Installable PWA · Your data never leaves your browser
+**Sakin, çevrimdışı çalışan bir odak çalışma alanı: görev listesi + Pomodoro + ilerleme geçmişi.**
+Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin tarayıcından hiç çıkmaz
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.0-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.0.1-267354?style=flat-square)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
-[![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-installation)
-[![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-languages)
+[![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-kurulumu)
+[![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-diller)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](./LICENSE)
-[![No Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](#-project-structure)
+[![No Deps](https://img.shields.io/badge/dependencies-0-success?style=flat-square)](#-proje-yapısı)
 
 <br/>
 
-[![Try It Online](https://img.shields.io/badge/🌐%20Try%20It%20Online-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+[![Try It Online](https://img.shields.io/badge/🌐%20Şimdi%20Dene-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+
+<br/>
+
+<sub>[English version](./README.en.md)</sub>
 
 </div>
 
 ---
 
-## 📸 Screenshots
+## 📸 Ekran Görüntüleri
 
 <div align="center">
 
-| Desktop | Mobile |
+| Masaüstü | Mobil |
 |:---:|:---:|
-| ![Desktop](docs/screenshots/desktop.png) | ![Mobile](docs/screenshots/mobile.png) |
+| ![Masaüstü](docs/screenshots/desktop.png) | ![Mobil](docs/screenshots/mobile.png) |
 
 </div>
 
 ---
 
-## ✨ Features
+## ✨ Özellikler
 
-### 📝 Tasks
+### 📝 Görevler
 
-- **Task-linked focus** — pick a task (◎), and every completed Pomodoro credits its minutes to that task
-- **Priorities** — cycle none → low → medium → high with a colored accent
-- **Search** — instant, diacritic-friendly (type "ikinci", find "İkinci")
-- **Edit inline** (double-click), undo deletes, filters, progress bar
-- Completed tasks keep counting toward your history even after you delete or clear them
+- **Göreve bağlı odak** — ◎ düğmesiyle görev seç; tamamlanan her pomodoro, dakikaları o göreve işleniyor
+- **Öncelikler** — yok / düşük / orta / yüksek, renkli şeritle
+- **Arama** — anlık, aksan dostu ("ikinci" yaz, "İkinci"yi bulur)
+- **Satır içi düzenleme** (çift tıkla), silme geri alma, filtreler, ilerleme çubuğu
+- Tamamlanan görevler silinse bile istatistiklerde yaşamaya devam ediyor
 
 ### ⏱️ Pomodoro
 
-- Focus / short break / long break cycle with configurable durations
-- Accurate crediting: minutes are recorded against the day and duration the session *started* with — changing settings mid-session or crossing midnight won't corrupt your stats
-- Auto-start breaks, sound chime, desktop notifications
+- Odak / kısa mola / uzun mola döngüsü, süreler ayarlanabilir
+- **Doğru kredi:** oturum hangi gün ve hangi süreyle başladıysa ona yazılır — oturum ortasında ayar değişse ya da gece yarısı geçilse istatistik bozulmaz
+- Otomatik mola başlatma, sesli çan, masaüstü bildirimleri
 
-### 📊 Progress
+### 📊 İlerleme
 
-- Weekly focus chart, streak counter, task and focus totals
-- **90-day GitHub-style heatmap** of daily focus minutes
-- Per-task focus totals
+- Haftalık odak grafiği, seri sayacı, görev ve odak toplamları
+- **90 günlük GitHub tarzı ısı haritası**
+- Görev başına odak toplamları
 
-### 💾 Data
+### 💾 Veri
 
-- **JSON export / import** — full backup of tasks, settings, history and language
-- Everything stays in `localStorage` — no account, no server, no tracking
+- **JSON dışa/içe aktarma** — görevler, ayarlar, geçmiş, tema ve dil dahil tam yedek
+- Her şey `localStorage`'da kalır — hesap yok, sunucu yok, izleme yok
 
-### 🎨 Interface
+### 🎨 Arayüz
 
-- 4 themes: light, dark, sepia, high contrast
-- Full RTL support (Arabic) and 12 languages
-- Keyboard shortcuts (`?` shows the cheat sheet), screen-reader friendly
+- 4 tema: açık, koyu, sepya, yüksek kontrast
+- Tam RTL desteği (Arapça) ve 12 dil
+- Klavye kısayolları (`?` kılavuzu gösterir), ekran okuyucu dostu
 
 ---
 
-## 🚀 Usage
+## 🚀 Kullanım
 
-### 🌐 Try Online
+### 🌐 Çevrimiçi Dene
 
-Open **[firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)** — no install, no signup.
+**[firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)** — kurulum yok, kayıt yok.
 
-### 💾 Local
+### 💻 Yerel
 
 ```bash
 git clone https://github.com/firatnexus/Small-Steps-.git
@@ -88,61 +92,60 @@ xdg-open index.html
 start index.html
 ```
 
-Or serve it (needed for the service worker / PWA install):
+Service worker / PWA kurulumu için sunucu üzerinden aç:
 
 ```bash
 npx serve .
 ```
 
-### 📱 PWA Installation
+### 📱 PWA Kurulumu
 
-- **Android / Chrome / Edge:** install banner, or ⋮ menu → *Install app*
-- **iOS Safari:** Share → *Add to Home Screen*
-- Once installed, it works fully offline
+- **Android / Chrome / Edge:** kurulum bandı veya ⋮ menüsü → *Uygulamayı yükle*
+- **iOS Safari:** Paylaş → *Ana Ekrana Ekle*
+- Kurulduktan sonra tamamen çevrimdışı çalışır
 
-### ⌨️ Keyboard Shortcuts
+### ⌨️ Klavye Kısayolları
 
-| Key | Action |
+| Tuş | İşlem |
 |---|---|
-| `Space` | Start / pause timer |
-| `N` | Focus the new-task field |
-| `?` | Shortcut cheat sheet |
-| `Esc` | Close dialogs / cancel edit |
-| double-click | Edit a task |
+| `Space` | Zamanlayıcıyı başlat / duraklat |
+| `N` | Yeni görev alanına odaklan |
+| `?` | Kısayol kılavuzu |
+| `Esc` | Pencereleri kapat / düzenlemeyi iptal et |
+| çift tık | Görevi düzenle |
 
 ---
 
-## 🌍 Languages
+## 🌍 Diller
 
-English, Türkçe, Español, Français, Deutsch, Português, Italiano, हिन्दी, العربية, 中文, 日本語, Русский — with a key-parity test suite (`test.html`) and a CI check (`tools/check-translations.js`).
+English, Türkçe, Español, Français, Deutsch, Português, Italiano, हिन्दी, العربية, 中文, 日本語, Русçe — anahtar-parite test paketiyle (`test.html`) ve CI denetimiyle (`tools/check-translations.js`) korunuyor.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Mimari
 
 ```
-index.html        — structure
-style.css         — themes + layout (4 themes, RTL, responsive)
-app.js            — state, tasks, timer, stats, backup (IIFE, no framework)
-translations.js   — i18n engine + 12 dictionaries
-sw.js             — service worker (cache-first assets, network-first HTML)
-manifest.json     — PWA manifest
-test.html         — browser test suite (i18n integrity)
-tools/            — CI scripts
+index.html        — yapı
+style.css         — temalar + yerleşim (4 tema, RTL, duyarlı)
+app.js            — durum, görevler, zamanlayıcı, istatistik, yedekleme (IIFE, framework yok)
+translations.js   — i18n motoru + 12 sözlük
+sw.js             — service worker (varlıklar önbellek-öncelikli, HTML ağ-öncelikli)
+manifest.json     — PWA manifesti
+test.html         — tarayıcı test paketi (i18n bütünlüğü)
+tools/            — CI betikleri
 ```
 
-- **Zero dependencies** — vanilla HTML/CSS/JS, no build step
-- **State** lives in `localStorage` under `small-steps-v2` (tasks, settings, stats) and `small-steps-history` (daily focus/done log, 90-day retention)
-- **Timer** uses wall-clock (`endAt`) so background throttling can't drift it
-- See [Data Storage](#-data-storage) details below
+- **Sıfır bağımlılık** — vanilla HTML/CSS/JS, derleme adımı yok
+- **Durum** `localStorage`'da: `small-steps-v2` (görevler, ayarlar, istatistikler) ve `small-steps-history` (günlük odak/tamamlama günlüğü, 90 gün saklanır)
+- **Zamanlayıcı** duvar saatini (`endAt`) kullanır; arka planda kısıtlansa da sapmaz
 
 ---
 
-## 🛠️ Customization
+## 🛠️ Özelleştirme
 
-### ⏱️ Default Durations
+### ⏱️ Varsayılan Süreler
 
-In `app.js`, `DEFAULT_SETTINGS`:
+`app.js` içinde `DEFAULT_SETTINGS`:
 
 ```js
 const DEFAULT_SETTINGS = {
@@ -151,28 +154,28 @@ const DEFAULT_SETTINGS = {
 };
 ```
 
-### 🎨 Color Palette
+### 🎨 Renk Paleti
 
-CSS custom properties in `style.css` (`--green`, `--break`, `--bg`, …) per theme block. Change once, all themes stay in sync.
+`style.css` içinde tema başına CSS özel değişkenleri (`--green`, `--break`, `--bg`, …). Tek yerden değiştir, tüm temalar güncellensin.
 
-### 🌍 Add a Language
+### 🌍 Dil Ekleme
 
-1. Copy the `en:` block in `translations.js`, translate values (keep `{placeholders}` intact)
-2. Add the code to the language block and to the test's expected list in `test.html`
-3. Open `test.html` — the key-parity test verifies you didn't miss a string
+1. `translations.js` içindeki `en:` bloğunu kopyala, değerleri çevir (`{yer tutucular}` aynen kalsın)
+2. Dil kodunu hem sözlüğe hem `test.html` içindeki beklenen listeye ekle
+3. `test.html`'i aç — anahtar-parite testi eksik bırakmadığını doğrular
 
 ---
 
-## 💾 Data Storage
+## 💾 Veri Depolama
 
-| Key | Contents |
+| Anahtar | İçerik |
 |---|---|
-| `small-steps-v2` | tasks, settings, filter, active task, daily stats |
-| `small-steps-history` | `{ "YYYY-MM-DD": { focus, done } }`, last 90 days |
-| `small-steps-theme` | selected theme |
-| `small-steps-language` | selected language |
+| `small-steps-v2` | görevler, ayarlar, filtre, odak görevi, günlük istatistik |
+| `small-steps-history` | `{ "YYYY-AA-GG": { focus, done } }`, son 90 gün |
+| `small-steps-theme` | seçili tema |
+| `small-steps-language` | seçili dil |
 
-Example task record:
+Örnek görev kaydı:
 
 ```json
 {
@@ -186,30 +189,30 @@ Example task record:
 }
 ```
 
-Use **Settings → Your data → Export backup** for a full JSON backup you can move between browsers or devices.
+**Ayarlar → Verilerin → Yedek al** ile tarayıcılar ve cihazlar arasında taşıyabileceğin tam JSON yedeği oluştur.
 
 ---
 
-## 🧪 Testing
+## 🧪 Test
 
 ```bash
-node tools/check-translations.js   # i18n key/placeholder parity (runs in CI)
+node tools/check-translations.js   # i18n anahtar/yer tutucu paritesi (CI'da da çalışır)
 ```
 
-Then open `test.html` in a browser for the full in-page suite (language switching, RTL, key parity, placeholder integrity).
+Ardından tam paket için (dil değiştirme, RTL, anahtar paritesi, yer tutucu bütünlüğü) tarayıcıda `test.html` dosyasını aç.
 
 ---
 
-## 🌐 Browser Support
+## 🌐 Tarayıcı Desteği
 
-Any modern browser with `localStorage` and flexbox/grid (Chrome, Firefox, Safari, Edge — desktop & mobile). Service worker features require HTTPS or localhost.
+`localStorage` ve flexbox/grid destekleyen tüm modern tarayıcılar (Chrome, Firefox, Safari, Edge — masaüstü ve mobil). Service worker özellikleri HTTPS veya localhost gerektirir.
 
 ---
 
-## 🤝 Contributing
+## 🤝 Katkıda Bulunma
 
-Issues and PRs are welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md). Keep it dependency-free: if a feature needs a framework, it probably doesn't belong here.
+Sorunlar ve PR'lar hoş karşılanır — bkz. [CONTRIBUTING.md](./CONTRIBUTING.md). Bağımlılıksız kalsın: bir özellik framework gerektiriyorsa, muhtemelen buraya ait değildir.
 
-## 📜 License
+## 📜 Lisans
 
-[MIT](./LICENSE) — do whatever you like, attribution appreciated.
+[MIT](./LICENSE) — istediğini yap, atıf memnuniyetle karşılanır.

@@ -2,7 +2,9 @@
    Minik Adımlar · sw.js
    Cache-first (varlıklar) + network-first (HTML) service worker.
    ============================================================ */
-const CACHE = "minik-adimlar-v3";
+/* Sürüm notu: app.js / style.css / translations.js değişirse bu adımı
+   güncelle — aksi halde eski önbellek yeni kullanıcılara ulaşmaz. */
+const CACHE = "minik-adimlar-v3.0.1";
 
 const ASSETS = [
   "./",
@@ -19,7 +21,6 @@ self.addEventListener("install", (event) => {
     caches.open(CACHE)
       .then((cache) => cache.addAll(ASSETS))
       .then(() => self.skipWaiting())
-      .catch(() => {}) // tek varlık hata verse bile kurulum devam etsin
   );
 });
 
