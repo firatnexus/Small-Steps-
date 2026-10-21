@@ -1161,11 +1161,38 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       const m = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
       const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
       const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
-      assert(m.version && m.version_name, "manifest'te version/version_name yok (Android '1' gösterir)");
+      assert(m.version && m.version_name, "manifest'te version/version_name yok (sürüm meta verisi eksik)");
       eq(m.version_name, pkg.version, "manifest.version_name ile package.json sürümü eşleşmiyor");
       eq(m.version, pkg.version, "manifest.version ile package.json sürümü eşleşmiyor");
       assert(sw.includes(`minik-adimlar-v${pkg.version}`), "SW önbellek adı sürümle eşleşmiyor");
       assert(/^\d+(\.\d+){0,3}$/.test(m.version), "version 1-4 noktayla ayrılmış tam sayı olmalı");
+    });
+
+    await test("PWA sorunsuz güncelleme akışı kablolı (controllerchange + ön plan denetimi)", () => {
+      const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+      const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+      const app = fs.readFileSync(path.join(root, "app.js"), "utf8");
+      // Kayıt: HTTP önbelleğini atlayan seçenekle
+      assert(html.includes('register("sw.js", { updateViaCache: "none" })'),
+        "updateViaCache: none ile kayıt yok");
+      // Yeni SW devreye girince sayfa kendini BİR KEZ tazeler (ilk kurulum hariç)
+      assert(html.includes('"controllerchange"'), "controllerchange dinleyicisi yok");
+      assert(html.includes("controlledBefore"), "denetim takibi (ilk kurulum istisnası) yok");
+      assert(html.includes("refreshing = true"), "tek tazeleme koruması yok");
+      // Güvenli tazeleme: zamanlayıcı/taslak/arka plan varsa bekle
+      assert(html.includes("safeToReload"), "güvenli an kontrolü yok");
+      assert(html.includes("__smallStepsSafeToReload"), "app ile güvenli an sözleşmesi yok");
+      assert(app.includes("window.__smallStepsSafeToReload"), "app.js güvenli an işlevini sunmuyor");
+      assert(app.includes("!timer.running"), "güvenli an kontrolü zamanlayıcıyı yok sayıyor");
+      // Ön plana dönüşte ve bağlantı gelince güncelleme denetimi
+      assert(html.includes('"visibilitychange"'), "ön plan denetimi yok");
+      assert(html.includes('"online"'), "çevrimiçi dönüş denetimi yok");
+      assert(html.includes("reg.update()"), "reg.update çağrısı yok");
+      // SW: atomik sürüm — HTML de YALNIZ bu sürüm önbelleğinden; yeni SW claim edip eskiyi siler
+      assert(sw.includes("clients.claim()"), "SW claim etmiyor (tazeleme tetiklenmez)");
+      assert(sw.includes("self.skipWaiting()"), "SW skipWaiting yapmıyor");
+      assert(sw.includes("caches.open(CACHE).then((c) => c.match(req))"), "eşleşme adlandırılmış önbellekte değil");
+      assert(!sw.includes("network-first (HTML)"), "HTML hâlâ network-first");
     });
   }
 

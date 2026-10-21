@@ -256,7 +256,50 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js")
+        const sw = navigator.serviceWorker;
+        /* Tazeleme güvenli mi? Sayfa görünür durumda, çalışan zamanlayıcı yok
+           ve hızlı ekleme kutusuna yazılan taslak yok (app.js sağlar). */
+        const safeToReload = () =>
+          document.visibilityState === "visible" &&
+          (typeof window.__smallStepsSafeToReload !== "function" ||
+            window.__smallStepsSafeToReload());
+        /* Bu sayfa açılırken bir SW tarafından kontrol ediliyor muydu?
+           İlk kurulumda (null → SW) tazelemeye gerek yok; sonraki her SW
+           değişiminde (sürüm güncellemesi) sayfa bir kez tazelenir. */
+        let controlledBefore = !!sw.controller;
+        let refreshing = false;
+        let pendingRefresh = false;
+        let retryHandle = null;
+        const reload = () => {
+          refreshing = true;
+          location.reload();
+        };
+        const tryPending = () => {
+          if (!pendingRefresh || refreshing || !safeToReload()) return;
+          reload();
+        };
+        sw.addEventListener("controllerchange", () => {
+          const firstInstall = !controlledBefore;
+          controlledBefore = !!sw.controller;
+          if (firstInstall || refreshing) return;
+          if (safeToReload()) { reload(); return; }
+          /* Zamanlayıcı çalışıyor / taslak yazılıyor / sayfa gizli:
+             tazelemeyi güvenli ana ertele (3 sn'de bir + görünür olunca). */
+          pendingRefresh = true;
+          if (!retryHandle) retryHandle = setInterval(tryPending, 3000);
+        });
+        sw.register("sw.js", { updateViaCache: "none" })
+          .then((reg) => {
+            /* Ön plana dönüşte ve bağlantı gelince güncelleme denetle:
+               arka planda bekleyen kurulu uygulama yeni sürümü böyle fark eder
+               (navigasyon olmadan da). */
+            const check = () => reg.update().catch(() => {});
+            document.addEventListener("visibilitychange", () => {
+              if (document.visibilityState === "visible") check();
+              tryPending();
+            });
+            window.addEventListener("online", check);
+          })
           .catch((err) => console.warn("SW kaydı başarısız:", err));
       });
     }

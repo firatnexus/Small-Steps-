@@ -1774,6 +1774,19 @@
       if (before !== state.stats.date) { save(); renderStats(); renderStatsCard(); }
     }, 60_000);
 
+    /* SW güncellemesi geldiğinde otomatik tazeleme için: sayfa şu an
+       tazelenebilir mi? Çalışan VEYA duraklatılmış ama ilerlemiş bir odak
+       oturumu varsa, hızlı ekleme / görev düzenleme / alt görev kutularında
+       yazılan taslak varsa tazeleme güvenli ana dek bekletilir
+       (index.html'deki güncelleme akışı bu işlevi yoklar). */
+    window.__smallStepsSafeToReload = () => {
+      const sessionInProgress = timer.running || timer.remaining < timer.total;
+      const drafts = [els.input, document.querySelector(".edit-input"),
+                      document.querySelector(".subtask-add input")];
+      const hasDraft = drafts.some((el) => el && el.value.trim() !== "");
+      return !sessionInProgress && !hasDraft;
+    };
+
     /* Açılış ekranı: ilk çizimden sonra soluklaştır ve DOM'dan kaldır.
        Çift requestAnimationFrame ilk kareyi garantiler; açılışın en az
        ~0,55 sn görünmesi için yükleme hızından bağımsız bekleme eklenir
