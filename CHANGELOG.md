@@ -1,8 +1,23 @@
 # Changelog
 
-## Unreleased
+## 3.3.0 — 2026-10-21
 
-- **README:** İngilizce sürüm artık ana README (eski Türkçe README.md → README.tr.md olarak taşındı)
+Forest and daily streak.
+
+### Added
+
+- **Forest** — every completed focus session plants a tree; the forest card shows the last 14 days with procedurally drawn trees (deterministic per day, zero assets). Days with more than 4 sessions show a "+n" pill; empty days show a seed dot
+- **Daily streak (Duolingo-style)** — consecutive active days (a task completed or a focus session ended), shown as a 🔥 badge on the forest card, with the longest streak on record. Streaks can exceed the 90-day history window via a compact streak tail that is preserved when history is pruned
+- **Session counter in history** — `sessions` per day (a focus session is one tree, regardless of duration); legacy data without it is untouched — the forest starts fresh rather than guessing from minutes
+- **Stats tile change** — the stats card's streak tile became "Sessions this week" (the streak now lives on the forest card, avoiding two streak displays)
+
+### Fixed
+
+- History pruning now carries a streak tail so long streaks survive the 90-day window, and gaps in pruned days cut the tail correctly
+
+### Docs
+
+- **README:** English is now the primary README (the former Turkish README.md moved to README.tr.md)
 
 ## 3.2.0 — 2026-10-21
 

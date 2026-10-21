@@ -58,9 +58,15 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 ### 📊 İlerleme
 
-- Haftalık odak grafiği, seri sayacı, görev ve odak toplamları
+- Haftalık odak grafiği, oturum / görev / odak toplamları
 - **90 günlük GitHub tarzı ısı haritası**
 - Görev başına odak toplamları
+
+### 🌲 Orman ve seri
+
+- **Seninle büyüyen bir orman** — tamamladığın her odak oturumu bir ağaç diker; ağaçlar prosedürel çizilir (güne göre deterministik, sıfır asset) ve son 14 gün gösterilir
+- **Günlük seri** — art arda aktif günler (tamamlanan görev veya odak oturumu), ormanın yanındaki 🔥 rozetinde ve kayıtlı en uzun serinle birlikte
+- Seri 90 günlük geçmiş penceresini aşabilir; orman sayaçları ve seri JSON yedeklerle taşınır
 
 ### 💾 Veri
 

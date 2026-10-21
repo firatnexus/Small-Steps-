@@ -137,8 +137,18 @@
     heatmap:     $("#heatmap"),
     statFocus:   $("#stat-focus-week"),
     statTasks:   $("#stat-tasks-week"),
-    statStreak:  $("#stat-streak")
+    statSessions: $("#stat-sessions-week"),
+    // Orman
+    forestDays:   $("#forest-days"),
+    forestScene:  $("#forest-scene"),
+    forestEmpty:  $("#forest-empty"),
+    forestSub:    $("#forest-sub"),
+    streakBadge:  $("#streak-badge"),
+    streakCount:  $("#streak-count")
   };
+
+  /* Sıfır ya da negatif olmayan sayı; eksikse fallback */
+  const statOr = (v, fb = 0) => Number.isFinite(v) ? Math.max(0, Math.round(v)) : fb;
 
   /* ---------- Durum ---------- */
   function normalizeTask(raw) {
@@ -189,7 +199,7 @@
   function loadState() {
     const fallback = {
       tasks: [], settings: { ...DEFAULT_SETTINGS },
-      stats: { date: todayKey(), focusMinutes: 0 }, filter: "all",
+      stats: { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0, streakTailEnd: null }, filter: "all",
       search: "", activeTaskId: null
     };
 
@@ -221,7 +231,12 @@
       stats: {
         date: typeof raw.stats?.date === "string" ? raw.stats.date : todayKey(),
         focusMinutes: Number.isFinite(raw.stats?.focusMinutes)
-          ? Math.max(0, raw.stats.focusMinutes) : 0
+          ? Math.max(0, raw.stats.focusMinutes) : 0,
+        // Orman/seri sayaçları (v3.3) — eski yedeklerde yoktur, 0 başlar
+        forestTotal: statOr(raw.stats?.forestTotal),
+        bestStreak:  raw.stats?.bestStreak === undefined ? null : statOr(raw.stats?.bestStreak),
+        streakTail: statOr(raw.stats?.streakTail),
+        streakTailEnd: typeof raw.stats?.streakTailEnd === "string" ? raw.stats.streakTailEnd : null
       },
       filter: ["all", "active", "done"].includes(raw.filter) ? raw.filter : "all",
       search: typeof raw.search === "string" ? raw.search.slice(0, 80) : "",
@@ -276,17 +291,52 @@
   let history = loadHistory();
   backfillDoneHistory();
 
+  // En uzun seri kaydı: eski yedekte yoksa mevcut kanıttan tohumlanır (bir kez)
+  if (state.stats.bestStreak === null) {
+    state.stats.bestStreak = Math.max(longestRunInHistory(), calculateStreak());
+    save();
+  }
+
   function saveHistory() {
     try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch {}
   }
 
   function recordHistory(day, field, amount = 1) {
-    if (!history[day]) history[day] = { focus: 0, done: 0 };
+    if (!history[day]) history[day] = { focus: 0, done: 0, sessions: 0 };
     history[day][field] = (history[day][field] || 0) + amount;
 
     const keys = Object.keys(history).sort();
     if (keys.length > 90) {
-      keys.slice(0, keys.length - 90).forEach(k => delete history[k]);
+      const removed = keys.slice(0, keys.length - 90);
+      const oldestKept = keys[keys.length - 90];
+      /* Seri kuyruğu: 90 günlük pencerenin dışındaki kesintisiz aktif günler.
+         Birikmiş kuyruk tarih çapasıyla (streakTailEnd = kuyruğun en yeni günü)
+         taşınır: art arda budamalarda gün gün büyür, pencereye bitişik ve
+         kesintisiz değilse sıfırlanır. */
+      const prevTail = state.stats.streakTail || 0;
+      const prevEnd = state.stats.streakTailEnd || null;
+      const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+      let tail = 0, tailEnd = null;
+      for (const k of removed) {
+        const active = (history[k]?.focus || 0) > 0 || (history[k]?.done || 0) > 0;
+        // Önceki kuyruğun devamıysa birikmişi devral
+        if (tail === 0 && prevTail > 0 && prevEnd && dayDiff(prevEnd, k) === 1) {
+          tail = prevTail; tailEnd = prevEnd;
+        }
+        // Zincir koptuysa (arada pasif/eksik gün) sıfırla
+        if (tailEnd !== null && dayDiff(tailEnd, k) !== 1) tail = 0;
+        tail = active ? tail + 1 : 0;
+        tailEnd = k;
+      }
+      // Pencereye bitişiklik: kuyruğun son günü ile tutulan en eski gün
+      // ardışık VE tutulan gün aktif olmalı — yoksa kuyruk pencereye bağlı değildir
+      const lastRemoved = removed[removed.length - 1];
+      const keptActive = (history[oldestKept]?.focus || 0) > 0 || (history[oldestKept]?.done || 0) > 0;
+      if (!keptActive || dayDiff(lastRemoved, oldestKept) !== 1) tail = 0;
+      state.stats.streakTail = tail;
+      state.stats.streakTailEnd = tail > 0 ? lastRemoved : null;
+
+      removed.forEach(k => delete history[k]);
     }
     saveHistory();
   }
@@ -802,7 +852,31 @@
       else if (i === 0) continue;
       else break;
     }
+    // Kuyruk yalnızca geriye tarama penceredeki TÜM kayıtları sorunsuz
+    // geçtiyse eklenebilir: arada kopukluk varsa kuyruk bugünkü seriye ait değil
+    const retained = Object.keys(history).length;
+    if (retained > 0 && streak >= retained) streak += state.stats.streakTail || 0;
     return streak;
+  }
+
+  /* Geçmişteki (90 günlük pencere dahil) en uzun kesintisiz aktif gün serisi.
+     bestStreak yalnız yedekten gelmiyorsa kanıttan tohumlanır. */
+  function longestRunInHistory() {
+    const keys = Object.keys(history).sort();
+    let best = 0, run = 0, prev = null;
+    for (const k of keys) {
+      const active = (history[k]?.focus || 0) > 0 || (history[k]?.done || 0) > 0;
+      if (!active) { run = 0; prev = k; continue; }
+      // Gün atlaması varsa (eksik kayıt) seri kesilir
+      if (prev) {
+        const gap = (new Date(k) - new Date(prev)) / 86400000;
+        if (gap > 1) run = 0;
+      }
+      run++;
+      if (run > best) best = run;
+      prev = k;
+    }
+    return best;
   }
 
   function renderStatsCard() {
@@ -852,10 +926,138 @@
 
     els.statFocus.textContent = String(totalFocus);
     els.statTasks.textContent = String(totalTasks);
-    els.statStreak.textContent = String(calculateStreak());
+    els.statSessions.textContent = String(weekKeys.reduce((s, k) => s + (history[k]?.sessions || 0), 0));
     els.weekBadge.textContent = `${totalFocus}${t("unitMin")}`;
 
+    // En uzun seri kaydı: yalnızca yeni rekor kırıldığında güncelle
+    const streak = calculateStreak();
+    if (streak > (state.stats.bestStreak || 0)) {
+      state.stats.bestStreak = streak;
+      save();
+    }
+
     renderHeatmap();
+    renderForest(streak);
+  }
+
+  /* ---------- Orman (v3.3) ----------
+     Tamamlanan her odak oturumu bir ağaç diker. Ağaçlar deterministik
+     olarak (gün + sıra numarası tohumu) üretilir: aynı veri her zaman
+     aynı ormanı çizer, dosya/asset gerekmez. Son 14 gün gösterilir;
+     gün başına en fazla 4 ağaç + "+n" rozeti. Eski veride oturum sayısı
+     yoktur (v3.3 öncesi dakika toplamından çıkarılamaz) — orman bu
+     sürümle başlar, istatistikler etkilenmez. */
+  const FOREST_DAYS = 14;
+  const FOREST_TREES_PER_DAY = 4;
+
+  function hashSeed(str) {
+    let h = 1779033703;
+    for (let i = 0; i < str.length; i++) {
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return h >>> 0;
+  }
+
+  /* Basit deterministik PRNG (mulberry32) — ağaç çeşitliliği için */
+  function mulberry32(a) {
+    return function() {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function treeSVG(seed) {
+    const r = mulberry32(seed);
+    const species = Math.floor(r() * 4);
+    const h = 34 + Math.floor(r() * 16);
+    const w = 22 + Math.floor(r() * 10);
+    const cx = w / 2;
+    const trunk = `<rect x="${(cx - 1.6).toFixed(1)}" y="${h - 13}" width="3.2" height="13" rx="1.4" class="tree-trunk"/>`;
+    let shapes = "";
+    if (species === 0) { // yuvarlak taç
+      shapes = `<circle cx="${(cx - 3.5).toFixed(1)}" cy="${h - 15}" r="7.5" class="tree-canopy c2"/>
+        <circle cx="${(cx + 3.5).toFixed(1)}" cy="${h - 17}" r="8.5" class="tree-canopy c1"/>
+        <circle cx="${cx.toFixed(1)}" cy="${h - 9}" r="6.5" class="tree-canopy c2"/>`;
+    } else if (species === 1) { // çam
+      shapes = `<path d="M${cx} ${h - 32} L${cx + 8.5} ${h - 14} H${cx - 8.5} Z" class="tree-canopy c1"/>
+        <path d="M${cx} ${h - 24} L${cx + 9.5} ${h - 5} H${cx - 9.5} Z" class="tree-canopy c2"/>`;
+    } else if (species === 2) { // elips taç
+      shapes = `<ellipse cx="${cx.toFixed(1)}" cy="${h - 14}" rx="9.5" ry="11.5" class="tree-canopy c1"/>
+        <ellipse cx="${(cx - 3).toFixed(1)}" cy="${h - 19}" rx="6" ry="7" class="tree-canopy c2"/>`;
+    } else { // iki kat blok
+      shapes = `<rect x="${cx - 6.5}" y="${h - 17}" width="13" height="10" rx="4.5" class="tree-canopy c1"/>
+        <rect x="${cx - 4.5}" y="${h - 26}" width="9" height="10" rx="4" class="tree-canopy c2"/>`;
+    }
+    return `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true" focusable="false">${trunk}${shapes}</svg>`;
+  }
+
+  function renderForest(streak) {
+    if (!els.forestDays) return;
+    const days = lastNDays(FOREST_DAYS);
+    const today = todayKey();
+    let treeTotal = 0;
+
+    const clusters = days.map((d) => {
+      const k = todayKey(d);
+      const n = history[k]?.sessions || 0;
+      treeTotal += n;
+      const shown = Math.min(n, FOREST_TREES_PER_DAY);
+
+      const cl = document.createElement("div");
+      cl.className = "day-cluster" + (n === 0 ? " empty" : "") + (k === today ? " today" : "");
+
+      const trees = document.createElement("div");
+      trees.className = "day-trees";
+      for (let i = 0; i < shown; i++) {
+        trees.insertAdjacentHTML("beforeend", treeSVG(hashSeed(`${k}#${i}`)));
+      }
+      cl.appendChild(trees);
+
+      if (n > FOREST_TREES_PER_DAY) {
+        const more = document.createElement("span");
+        more.className = "more-pill";
+        more.textContent = t("forestMore", { n: n - FOREST_TREES_PER_DAY });
+        cl.appendChild(more);
+      }
+
+      const label = document.createElement("div");
+      label.className = "day-label";
+      try { label.textContent = k === today ? t("dueToday") : d.toLocaleDateString(getLang(), { weekday: "short" }); }
+      catch { label.textContent = d.toLocaleDateString(undefined, { weekday: "short" }); }
+      cl.appendChild(label);
+
+      return cl;
+    });
+
+    els.forestDays.replaceChildren(...clusters);
+    els.forestDays.setAttribute("aria-label", t("forestAria", { count: treeTotal }));
+
+    // Boş durum yalnız "hiç ağaç dikilmemişse": dikilmiş ama pencerede
+    // oturum yoksa (ör. 2 hafta ara vermişse) sahne + toplam gösterilir
+    const isEmpty = treeTotal === 0 && (state.stats.forestTotal || 0) === 0;
+    els.forestScene.hidden = isEmpty;
+    els.forestEmpty.hidden = !isEmpty;
+
+    // Seri rozeti: rakam + yerelleştirilmiş gün etiketi (mobilde de anlaşılır)
+    els.streakCount.textContent = streak === 1 ? t("streakDay1", { n: 1 }) : t("streakDays", { n: streak });
+    els.streakBadge.title = t("statStreak");
+    els.forestSub.textContent = t("forestSub", {
+      total: state.stats.forestTotal || 0,
+      best: state.stats.bestStreak || 0
+    });
+
+    // Mobilde bugünün ağaçları görünsün: taşma varsa bugüne kaydır
+    scrollForestToToday();
+  }
+
+  function scrollForestToToday() {
+    const todayCluster = els.forestDays?.querySelector(".day-cluster.today");
+    if (todayCluster && els.forestScene && els.forestScene.scrollWidth > els.forestScene.clientWidth) {
+      todayCluster.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
   }
 
   /* ---------- 90 günlük ısı haritası ---------- */
@@ -1088,8 +1290,12 @@
         state.stats.date = typeof st.stats.date === "string" ? st.stats.date : todayKey();
         state.stats.focusMinutes = Number.isFinite(st.stats.focusMinutes)
           ? Math.max(0, st.stats.focusMinutes) : 0;
+        state.stats.forestTotal = statOr(st.stats.forestTotal);
+        state.stats.bestStreak  = statOr(st.stats.bestStreak);
+        state.stats.streakTail = statOr(st.stats.streakTail);
+        state.stats.streakTailEnd = typeof st.stats.streakTailEnd === "string" ? st.stats.streakTailEnd : null;
       } else {
-        state.stats = { date: todayKey(), focusMinutes: 0 };
+        state.stats = { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0, streakTailEnd: null };
       }
 
       // Zamanlayıcıyı yeni sürelerle eşitle
@@ -1105,10 +1311,14 @@
           if (typeof rec !== "object" || rec === null) continue;
           history[day] = {
             focus: Math.max(0, Math.round(Number(rec.focus) || 0)),
-            done: Math.max(0, Math.round(Number(rec.done) || 0))
+            done: Math.max(0, Math.round(Number(rec.done) || 0)),
+            sessions: Math.max(0, Math.round(Number(rec.sessions) || 0))
           };
         }
         saveHistory();
+        // Yedekteki en uzun seri kaydı, içe aktarılan geçmişin kanıtından küçükse güncelle
+        const evidence = Math.max(longestRunInHistory(), calculateStreak());
+        if (evidence > (state.stats.bestStreak || 0)) state.stats.bestStreak = evidence;
       }
 
       if (typeof data.language === "string" && window.i18n.SUPPORTED_LANGS.includes(data.language)) {
@@ -1266,6 +1476,10 @@
 
       recordHistory(creditDay, "focus", minutes);
 
+      // Orman: tamamlanan her odak oturumu bir ağaç diker (v3.3)
+      recordHistory(creditDay, "sessions", 1);
+      state.stats.forestTotal = (state.stats.forestTotal || 0) + 1;
+
       // Gün içinde sayaç: yalnızca oturum bugün başladıysa artar.
       // Dün başlayan oturumun kredisi geçmişe zaten yazıldı.
       if (creditDay === todayKey()) {
@@ -1327,6 +1541,16 @@
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     if (document.visibilityState === "visible") return;
     try { new Notification(title, { body }); } catch {}
+  }
+
+  /* Pencere boyu değişince (mobil döndürme, masaüstü küçültme) orman
+     yeniden konumlanır: bugünün ağaçları görünümda kalsın */
+  {
+    let forestResizeT;
+    window.addEventListener("resize", () => {
+      clearTimeout(forestResizeT);
+      forestResizeT = setTimeout(scrollForestToToday, 150);
+    });
   }
 
   /* ---------- Olaylar ---------- */

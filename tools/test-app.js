@@ -876,6 +876,256 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     dom2.window.close();
   }
 
+  console.log("\n— Orman ve seri (v3.3) —");
+  {
+    /* Sahte saatle odak oturumunu tamamla: süre ayarla → başlat →
+       (isteğe bağlı duraklat/devam) → saati ileri al → tick'in işlemesini bekle */
+    const completeSession = async (dom, { minutes = 25, pauseFirst = false } = {}) => {
+      const w = dom.window;
+      // Odak modunda olduğundan emin ol (mola tamamlanınca kip değişir)
+      const focusChip = $(dom, '#mode-chips .chip[data-mode="focus"]');
+      if (focusChip) focusChip.click();
+      // Süreyi her zaman açıkça ayarla (önceki testin ayarı kalabilir)
+      const input = $(dom, "#set-focus");
+      input.value = String(minutes);
+      input.dispatchEvent(new w.Event("change", { bubbles: true }));
+      $(dom, "#start-pause").click();
+      if (pauseFirst) { $(dom, "#start-pause").click(); $(dom, "#start-pause").click(); }
+      const realNow = w.Date.now.bind(w.Date);
+      w.Date.now = () => realNow() + (minutes + 1) * 60 * 1000;
+      await settled(700);
+      w.Date.now = realNow;
+    };
+    const MIN_SETTINGS = { focus: 25, short: 5, long: 15, longEvery: 4, autoStart: false, sound: true };
+    const gorevY = (id, ekstra = {}) => ({ id, text: "Test görevi", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, ...ekstra });
+
+    // 1) Tamamlanan oturum ağaç diker
+    const dom = await launch();
+    await test("Tamamlanan odak oturumu bir ağaç diker (sessions + forestTotal)", async () => {
+      await completeSession(dom);
+      const h = readHistory(dom);
+      eq(h[todayKey()]?.sessions, 1, "sessions kaydedilmedi");
+      eq(readState(dom).stats.forestTotal, 1, "forestTotal artmadı");
+      eq($$(dom, "#forest-days .day-cluster.today svg").length, 1, "ağaç render olmadı");
+      assert($(dom, "#forest-empty").hidden, "boş durum gizlenmedi");
+      assert(!$(dom, "#forest-scene").hidden, "orman sahnesi görünmeli");
+    });
+
+    await test("İkinci oturum ikinci ağacı diker", async () => {
+      await completeSession(dom);
+      eq(readHistory(dom)[todayKey()]?.sessions, 2);
+      eq($$(dom, "#forest-days .day-cluster.today svg").length, 2);
+    });
+
+    await test("Uzun oturum tek ağaç diker (ağaç dakikadan değil oturumdan)", async () => {
+      await completeSession(dom, { minutes: 50 });
+      eq(readHistory(dom)[todayKey()]?.sessions, 3, "50 dk = 1 oturum olmalı");
+      eq(readHistory(dom)[todayKey()]?.focus, 100, "25+25+50 dakika bekleniyordu");
+    });
+
+    await test("Duraklatılıp devam eden oturum tamamlanınca ağaç diker", async () => {
+      await completeSession(dom, { pauseFirst: true });
+      eq(readHistory(dom)[todayKey()]?.sessions, 4);
+    });
+
+    await test("Atlama ve sıfırlama ağaç dikmez", async () => {
+      const before = readHistory(dom)[todayKey()]?.sessions;
+      $(dom, "#start-pause").click();
+      $(dom, "#skip").click();
+      $(dom, "#reset").click();
+      await settled(400);
+      eq(readHistory(dom)[todayKey()]?.sessions, before, "atlama/sıfırlama ağaç dikti");
+    });
+
+    await test("Orman çizimi deterministik (aynı veri aynı orman)", async () => {
+      const st = readState(dom);
+      const hist = readHistory(dom);
+      const domD = await launch({ state: st, history: hist });
+      assert($(dom, "#forest-days").innerHTML === $(domD, "#forest-days").innerHTML,
+        "aynı veri farklı orman çizdi");
+      domD.window.close();
+    });
+
+    await test("Gün başına 4 ağaç + 'daha fazla' rozeti", async () => {
+      await completeSession(dom); // 5. oturum
+      await completeSession(dom); // 6. oturum
+      const h = readHistory(dom);
+      eq(h[todayKey()]?.sessions, 6);
+      eq($$(dom, "#forest-days .day-cluster.today svg").length, 4, "gün başına en fazla 4 ağaç");
+      const more = $(dom, "#forest-days .day-cluster.today .more-pill");
+      assert(more && more.textContent.includes("2"), "+2 rozeti görünmeli");
+    });
+
+    await test("Seri rozeti aktif günleri sayar (bugün aktif: '1 day')", () => {
+      eq($(dom, "#streak-count").textContent, "1 day");
+    });
+
+    // Eski veri: sessions yok → boş durum, istatistikler korunur
+    const domL = await launch({
+      state: { tasks: [], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+      history: { [todayKey()]: { focus: 55, done: 2 } }
+    });
+    await test("Eski veride (sessions yok) orman boş durum gösterir, istatistikler korunur", () => {
+      eq(readHistory(domL)[todayKey()]?.sessions || 0, 0);
+      assert(!$(domL, "#forest-empty").hidden, "boş durum görünmeli");
+      assert($(domL, "#forest-scene").hidden, "sahne gizlenmeli");
+      eq($(domL, "#stat-focus-week").textContent, "55", "odak istatistiği bozuldu");
+      eq($(domL, "#streak-count").textContent, "1 day", "bugün aktif: seri 1 olmalı");
+    });
+    domL.window.close();
+
+    // Saati (takvimi de) ileri al: Date.now VE new Date() aynı kaynakta.
+    // Her çağrı mevcut saate +1 gün ekler (art arda gün geçişleri için).
+    const shiftClock = (dom, days = 1) => {
+      const w = dom.window;
+      const RealDate = w.Date;
+      const shift = days * 86400000;
+      w.Date = class extends RealDate {
+        constructor(...args) { super(...(args.length ? args : [RealDate.now() + shift])); }
+        static now() { return RealDate.now() + shift; }
+      };
+      w.Date.now = () => RealDate.now() + shift;
+    };
+    const addTask = (dom, text) => {
+      $(dom, "#task-input").value = text;
+      $(dom, "#task-form").dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true }));
+    };
+    const completeByText = (dom, text) => {
+      const item = $$(dom, "#task-list .task").find(el => el.textContent.includes(text));
+      if (!item) throw new Error("görev bulunamadı: " + text);
+      item.querySelector('input[type="checkbox"]').click();
+    };
+
+    // Seri 90 günlük pencereyi aşabilir: kuyruk mantığı
+    const hist95 = {};
+    for (let i = 0; i < 95; i++) {
+      const d = new Date(Date.now() - i * 86400000);
+      hist95[todayKey(d)] = { focus: 25, done: 1, sessions: 1 };
+    }
+    const domS = await launch({
+      state: { tasks: [], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+      history: hist95
+    });
+    await test("Seri 90 günlük pencereyi aşabilir (kuyruk: 95 gün)", async () => {
+      addTask(domS, "g1");
+      completeByText(domS, "g1");
+      eq($(domS, "#streak-count").textContent, "95 days", "95 günlük seri bekleniyordu");
+      await settled(300); // save() debounce'u
+      const st = readState(domS);
+      eq(st.stats.streakTail, 5, "5 günlük kuyruk bekleniyordu");
+      assert(st.stats.streakTailEnd, "kuyruk tarih çapası yazılmadı");
+      eq(st.stats.bestStreak, 95, "en uzun seri kaydı tutulmalı");
+    });
+
+    await test("Art arda budamalarda kuyruk gün gün büyür (96, 97 gün)", async () => {
+      // Gün +1: yeni görev → 96. gün, kuyruk 6
+      shiftClock(domS, 1);
+      addTask(domS, "g2");
+      completeByText(domS, "g2");
+      await settled(300);
+      let st = readState(domS);
+      eq(st.stats.streakTail, 6, "1. gün geçişinde kuyruk 6 olmalı");
+      eq($(domS, "#streak-count").textContent, "96 days", "96 günlük seri");
+
+      // Gün +1 daha: 97. gün, kuyruk 7
+      shiftClock(domS, 1);
+      addTask(domS, "g3");
+      completeByText(domS, "g3");
+      await settled(300);
+      st = readState(domS);
+      eq(st.stats.streakTail, 7, "2. gün geçişinde kuyruk 7 olmalı");
+      eq($(domS, "#streak-count").textContent, "97 days", "97 günlük seri");
+    });
+
+    await test("Son zamanlarda gün atlanırsa kuyruk seriye eklenmez", async () => {
+      // Saat +2'de (uygulamanın bugünü = gerçek bugün+2). Pencerenin ortasından
+      // bir günü sil → zincir kopar → seri yalnızca bugüne kadar; kuyruk görünmez.
+      const hIntact = readHistory(domS);
+      const h = { ...hIntact };
+      const kopuk = todayKey(new Date(Date.now() - 2 * 86400000)); // bugünden 2 gün önce
+      delete h[kopuk];
+      const st = readState(domS);
+      const domK = await launch({ state: st, history: h });
+      eq($(domK, "#streak-count").textContent, "2 days", "kırık zincir kuyruğu almalıydı");
+      eq(readState(domK).stats.streakTail, 7, "kuyruk kaydı korunur (görünmez)");
+      domK.window.close();
+
+      // Yeniden yükleme (saat aynı, geçmiş bütün): seri 97 dönmeli.
+      // Saat kaydırması render tetiklemez — bir görev tamamla → yeniden hesap.
+      const domW = await launch({ state: st, history: hIntact });
+      shiftClock(domW, 2);
+      addTask(domW, "w1");
+      completeByText(domW, "w1");
+      eq($(domW, "#streak-count").textContent, "97 days", "yeniden yükleme seriyi düşürdü");
+
+      // Yedek gidiş-dönüşü: kuyruk ve çapa taşınsın
+      $(domW, "#export-data").click();
+      const data = JSON.parse(domW.window.__lastBlob.__text);
+      eq(data.state.stats.streakTail, 7, "yedekte kuyruk yok");
+      assert(data.state.stats.streakTailEnd, "yedekte çapa yok");
+      const domX = await launch();
+      shiftClock(domX, 2);
+      const wX = domX.window;
+      wX.confirm = () => true;
+      const file = new wX.File([domW.window.__lastBlob.__text], "yedek.json", { type: "application/json" });
+      Object.defineProperty(wX.document.querySelector("#import-file"), "files", { value: [file] });
+      wX.document.querySelector("#import-file").dispatchEvent(new wX.Event("change"));
+      await settled(400);
+      eq(readState(domX).stats.streakTail, 7, "içe aktarımda kuyruk kayboldu");
+      eq($(domX, "#streak-count").textContent, "97 days", "içe aktarımda seri kayboldu");
+      domX.window.close();
+      domW.window.close();
+    });
+
+    await test("Kuyruktaki gün atlaması kuyruğu o günde keser", async () => {
+      // 100 gün: i=0..99 aktif, yalnız i=95 pasif.
+      // Budama 10 günü (i=99..90) atar: i=99..96 aktif (4), i=95 pasif → kesinti,
+      // i=94..90 aktif (5) → pencereye bitişik kuyruk 5 gün.
+      const hist = {};
+      for (let i = 0; i < 100; i++) {
+        const d = new Date(Date.now() - i * 86400000);
+        if (i === 95) continue;
+        hist[todayKey(d)] = { focus: 25, done: 1, sessions: 1 };
+      }
+      const domG = await launch({
+        state: { tasks: [], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+        history: hist
+      });
+      addTask(domG, "g1");
+      completeByText(domG, "g1");
+      await settled(300);
+      const st = readState(domG);
+      eq(st.stats.streakTail, 5, "5 günlük kuyruk bekleniyordu");
+      eq($(domG, "#streak-count").textContent, "95 days", "90 pencere + 5 kuyruk");
+      domG.window.close();
+    });
+    domS.window.close();
+
+    // Yedek gidiş-dönüşü orman sayaçlarını taşır
+    await test("Yedek gidiş-dönüşü sessions, forestTotal ve bestStreak taşır", async () => {
+      $(dom, "#export-data").click();
+      const data = JSON.parse(dom.window.__lastBlob.__text);
+      eq(data.state.stats.forestTotal, 6, "yedekte forestTotal yok");
+      eq(data.history[todayKey()].sessions, 6, "yedekte sessions yok");
+      eq(data.state.stats.bestStreak, 1, "yedekte bestStreak yok");
+
+      const domR = await launch();
+      const wR = domR.window;
+      wR.confirm = () => true;
+      const file = new wR.File([dom.window.__lastBlob.__text], "yedek.json", { type: "application/json" });
+      Object.defineProperty(wR.document.querySelector("#import-file"), "files", { value: [file] });
+      wR.document.querySelector("#import-file").dispatchEvent(new wR.Event("change"));
+      await settled(400);
+
+      eq(readHistory(domR)[todayKey()]?.sessions, 6, "içe aktarımda sessions kayboldu");
+      eq(readState(domR).stats.forestTotal, 6, "içe aktarımda forestTotal kayboldu");
+      eq(readState(domR).stats.bestStreak, 1, "içe aktarımda bestStreak kayboldu");
+      eq($$(domR, "#forest-days .day-cluster.today svg").length, 4, "orman render olmadı");
+      domR.window.close();
+    });
+    dom.window.close();
+  }
+
   console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız`);
   process.exit(fail ? 1 : 0);
 })().catch((err) => {
