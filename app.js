@@ -1773,6 +1773,22 @@
       ensureToday();
       if (before !== state.stats.date) { save(); renderStats(); renderStatsCard(); }
     }, 60_000);
+
+    /* Açılış ekranı: ilk çizimden sonra soluklaştır ve DOM'dan kaldır.
+       Çift requestAnimationFrame ilk kareyi garantiler; açılışın en az
+       ~0,55 sn görünmesi için yükleme hızından bağımsız bekleme eklenir
+       (hızlı açılışta göz kırpamasın diye). */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const splash = document.getElementById("splash");
+        if (!splash) return;
+        const wait = Math.max(0, 550 - performance.now());
+        setTimeout(() => {
+          splash.classList.add("splash-hide");
+          setTimeout(() => splash.remove(), 600);
+        }, wait);
+      });
+    });
   }
 
   if (document.readyState === "loading") {

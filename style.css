@@ -697,3 +697,43 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 .day-cluster.today .day-label { color: var(--green); }
 .forest-empty { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .92rem; }
 .forest-empty svg { flex: none; color: var(--green); }
+
+/* ============ Açılış ekranı (v3.3.1) ============ */
+#splash {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 30%, var(--glow) 0, transparent 26rem), var(--bg);
+  opacity: 1; transition: opacity .45s ease;
+}
+#splash.splash-hide { opacity: 0; pointer-events: none; }
+.splash-inner { text-align: center; }
+.splash-sprout { width: 96px; height: 96px; margin: 0 auto 16px; }
+.splash-soil { fill: color-mix(in oklab, var(--muted) 40%, transparent); }
+.splash-stem { fill: color-mix(in oklab, var(--muted) 55%, #8a6d4b); }
+.splash-leaf { fill: var(--green); }
+.splash-bud { fill: color-mix(in oklab, var(--green) 70%, var(--card)); }
+.splash-name {
+  margin: 0; font-size: 1.6rem; font-weight: 800; letter-spacing: -.03em;
+  color: var(--ink);
+}
+.splash-tag {
+  margin: 6px 0 0; font-size: .78rem; font-weight: 650;
+  letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+}
+/* Filiz büyüme animasyonu: topraktan çıkar, yapraklar açılır */
+@keyframes splash-grow {
+  0%   { transform: translateY(10px) scale(.6); opacity: 0; }
+  55%  { transform: translateY(0) scale(1); opacity: 1; }
+  70%  { transform: translateY(-2px) scale(1.04); }
+  100% { transform: translateY(0) scale(1); }
+}
+.splash-sprout { animation: splash-grow .7s cubic-bezier(.2,.8,.3,1) both; transform-origin: 50% 85%; }
+.splash-name, .splash-tag { animation: splash-rise .6s .25s cubic-bezier(.2,.8,.3,1) both; }
+@keyframes splash-rise {
+  from { transform: translateY(8px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-sprout, .splash-name, .splash-tag { animation: none; }
+  #splash { transition: none; }
+}

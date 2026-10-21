@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.3.1 — 2026-10-21
+
+English install experience and an opening splash screen.
+
+### Changed
+
+- **PWA install name is now English:** the manifest (name / short_name / description / shortcut) and the Apple web-app title are in English — the install prompt and the installed app's home-screen label now read "Small Steps" (the in-app UI stays in your chosen language)
+- Static page title, meta description and `og:locale` (`en_US`) switched to English
+
+### Added
+
+- **Splash screen:** on every launch, a calm opening shows a growing sprout with the app name and "Find your own pace"; it fades out as soon as the first paint is ready (~0.5s), respects `prefers-reduced-motion`, and never blocks interaction beyond that
+
 ## 3.3.0 — 2026-10-21
 
 Forest and daily streak.

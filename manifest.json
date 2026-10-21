@@ -1,8 +1,8 @@
 {
-  "name": "Minik Adımlar — Günlük odak alanın",
-  "short_name": "Minik Adımlar",
-  "description": "Görev listesi ve Pomodoro zamanlayıcısı. 12 dilde, çevrimdışı çalışan, hesap gerektirmeyen odak uygulaması.",
-  "lang": "tr",
+  "name": "Small Steps — Your daily focus space",
+  "short_name": "Small Steps",
+  "description": "Task list and Pomodoro timer. A calm, offline-first focus app in 12 languages — no account, no tracking.",
+  "lang": "en",
   "dir": "ltr",
   "start_url": "./index.html",
   "scope": "./",
@@ -35,8 +35,8 @@
   ],
   "shortcuts": [
     {
-      "name": "Yeni görev ekle",
-      "short_name": "Görev",
+      "name": "Add new task",
+      "short_name": "Task",
       "url": "./index.html#new-task",
       "icons": [
         {
