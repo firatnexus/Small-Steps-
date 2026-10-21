@@ -147,6 +147,34 @@ input:focus-visible, button:focus-visible, summary:focus-visible, select:focus-v
   .task-text { flex-basis: calc(100% - 44px); }
   .task-actions { flex-basis: 100%; justify-content: flex-end; gap: 4px; }
 }
+
+/* Alt görevler (v3.1): tek seviye, ebeveynin altında girintili */
+.task.subtask {
+  margin-inline-start: 26px;
+  padding-block: 8px;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--card) 88%, var(--soft));
+}
+.task.subtask .task-text { font-size: .95rem; }
+.subtask-add {
+  flex-basis: 100%; display: flex; gap: 8px;
+  margin-top: 8px;
+}
+.task:has(.subtask-add) { flex-wrap: wrap; }
+.subtask-add input {
+  flex: 1; min-width: 0; padding: 7px 9px;
+  border: 1px dashed var(--line); border-radius: 9px;
+  background: var(--field); color: var(--ink); outline: none;
+}
+.subtask-add input:focus { border-style: solid; border-color: var(--green); }
+.subtask-add-btn {
+  flex: none; padding: 7px 12px;
+  border: 0; border-radius: 9px;
+  background: var(--soft); color: var(--green-dark);
+  font-weight: 700; cursor: pointer;
+}
+.subtask-add-btn:hover { background: var(--green); color: #fff; }
+.subtask-pill { color: var(--muted); }
 .icon-btn {
   width: 32px; height: 32px; display: grid; place-items: center;
   border: 0; border-radius: 9px; background: transparent;
@@ -308,7 +336,7 @@ footer {
 }
 @media print {
   .topbar, .timer-controls, .settings, .tip, .toast,
-  .filters, .task-footer, .task-actions { display: none !important; }
+  .filters, .task-footer, .task-actions, .subtask-add { display: none !important; }
   body { background: #fff; color: #000; }
   .card { box-shadow: none; border: 1px solid #ccc; page-break-inside: avoid; }
   .grid { display: block; }

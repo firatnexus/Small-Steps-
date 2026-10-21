@@ -4,7 +4,7 @@
    ============================================================ */
 /* Sürüm notu: app.js / style.css / translations.js değişirse bu adımı
    güncelle — aksi halde eski önbellek yeni kullanıcılara ulaşmaz. */
-const CACHE = "minik-adimlar-v3.0.1";
+const CACHE = "minik-adimlar-v3.1.0";
 
 const ASSETS = [
   "./",

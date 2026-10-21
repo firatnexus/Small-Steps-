@@ -1,0 +1,19 @@
+{
+  "name": "small-steps",
+  "version": "3.1.0",
+  "description": "Görev listesi + Pomodoro PWA — test bağımlılıkları (uygulamanın kendisi sıfır bağımlılıklıdır)",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node tools/test-app.js",
+    "test:translations": "node tools/check-translations.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  },
+  "private": true
+}

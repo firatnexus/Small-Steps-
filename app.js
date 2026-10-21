@@ -89,6 +89,7 @@
     focusTaskClear:  $("#focus-task-clear"),
     // Veri
     exportData:  $("#export-data"),
+    exportCsv:   $("#export-csv"),
     importData:  $("#import-data"),
     importFile:  $("#import-file"),
     // Kısayollar
@@ -114,8 +115,30 @@
       createdAt: Number.isFinite(raw.createdAt) ? raw.createdAt : Date.now(),
       doneAt: Number.isFinite(raw.doneAt) ? raw.doneAt : (raw.done ? Date.now() : null),
       priority: clampInt(raw.priority, 0, 3, 0),
-      focus: Number.isFinite(raw.focus) ? Math.max(0, Math.round(raw.focus)) : 0
+      focus: Number.isFinite(raw.focus) ? Math.max(0, Math.round(raw.focus)) : 0,
+      parentId: typeof raw.parentId === "string" && raw.parentId ? raw.parentId : null
     };
+  }
+
+  /* v3.1: görev listesini tek seviyeli alt görev modeline göre temizler.
+     - Yinelenen id'ler atılır (ilk kayıt kalır)
+     - Kendini/ebeveyni olmayan bir görevi işaret eden parentId temizlenir
+     - En fazla 1 seviye derinlik: ebeveyni alt görev olan görevler üst seviyeye alınır */
+  function sanitizeTasks(tasks) {
+    const byId = new Map();
+    const out = [];
+    for (const task of tasks) {
+      if (!task) continue;
+      if (byId.has(task.id)) continue; // yinelenen id
+      byId.set(task.id, task);
+      out.push(task);
+    }
+    for (const task of out) {
+      if (!task.parentId) continue;
+      const parent = byId.get(task.parentId);
+      if (!parent || parent === task || parent.parentId) task.parentId = null;
+    }
+    return out;
   }
 
   function loadState() {
@@ -148,7 +171,7 @@
     }
 
     return {
-      tasks: Array.isArray(raw.tasks) ? raw.tasks.map(normalizeTask).filter(Boolean) : [],
+      tasks: sanitizeTasks(Array.isArray(raw.tasks) ? raw.tasks.map(normalizeTask).filter(Boolean) : []),
       settings,
       stats: {
         date: typeof raw.stats?.date === "string" ? raw.stats.date : todayKey(),
@@ -291,6 +314,10 @@
     return state.tasks.find(t => t.id === state.activeTaskId) || null;
   }
 
+  /* ---------- Alt görevler (v3.1) ---------- */
+  const topTasks = () => state.tasks.filter(t => !t.parentId);
+  const childrenOf = (parentId) => state.tasks.filter(t => t.parentId === parentId);
+
   function setActiveTask(id) {
     state.activeTaskId = id;
     save(); renderTasks(); renderFocusTask();
@@ -301,14 +328,23 @@
     .replace(/İ/g, "i").replace(/I/g, "i")
     .toLowerCase().replace(/ı/g, "i");
 
-  function visibleTasks() {
-    let tasks = state.tasks;
-    if (state.filter === "active") tasks = tasks.filter(t => !t.done);
-    else if (state.filter === "done") tasks = tasks.filter(t => t.done);
+  /* Durum ve arama filtreleri üst seviye görevlere uygulanır; alt görevler
+     bağlam olarak ebeveyninin altında görünür. Aramada alt görev eşleşmesi
+     ebeveyni de listeye çıkarır. */
+  function matchesQuery(task, q) {
+    return !q || foldText(task.text).includes(q);
+  }
 
+  function visibleGroups() {
     const q = foldText(state.search.trim());
-    if (q) tasks = tasks.filter(t => foldText(t.text).includes(q));
-    return tasks;
+    let parents = topTasks();
+    if (state.filter === "active") parents = parents.filter(t => !t.done);
+    else if (state.filter === "done") parents = parents.filter(t => t.done);
+    if (q) {
+      parents = parents.filter(p =>
+        matchesQuery(p, q) || childrenOf(p.id).some(k => matchesQuery(k, q)));
+    }
+    return parents;
   }
 
   function makeIconButton(label, glyph, extra, onClick) {
@@ -355,7 +391,7 @@
 
   function buildTaskItem(task) {
     const item = document.createElement("li");
-    item.className = `task${task.done ? " done" : ""}${task.priority ? ` prio-${task.priority}` : ""}`;
+    item.className = `task${task.parentId ? " subtask" : ""}${task.done ? " done" : ""}${task.priority ? ` prio-${task.priority}` : ""}`;
     item.dataset.id = task.id;
 
     const checkbox = document.createElement("input");
@@ -369,15 +405,22 @@
       task.done = checkbox.checked;
       task.doneAt = task.done ? Date.now() : null;
       if (task.done) {
-        recordHistory(todayKey(), "done", 1);
-        const total = state.tasks.filter(t => t.done).length;
-        if (total === state.tasks.length && state.tasks.length > 1) {
-          showToast(t("toastAllDone"));
+        // İstatistik yalnızca üst seviye görevleri sayar; alt görev ilerlemesi
+        // ebeveynin "2/5" rozetinde görünür.
+        if (!task.parentId) {
+          recordHistory(todayKey(), "done", 1);
+          const total = topTasks().length;
+          const done = topTasks().filter(t => t.done).length;
+          if (total > 1 && done === total) {
+            showToast(t("toastAllDone"));
+          }
         }
       } else if (wasDoneAt && todayKey(new Date(wasDoneAt)) === todayKey()) {
-        // geri alma: aynı gün tamamlanmışsa sayıyı geri al
-        const day = todayKey();
-        if ((history[day]?.done || 0) > 0) recordHistory(day, "done", -1);
+        // geri alma: aynı gün tamamlanmışsa sayıyı geri al (yalnız üst seviye)
+        if (!task.parentId) {
+          const day = todayKey();
+          if ((history[day]?.done || 0) > 0) recordHistory(day, "done", -1);
+        }
       }
       save(); renderTasks();
     });
@@ -396,6 +439,19 @@
       pill.textContent = `${task.focus} ${t("unitMin").trim()}`;
       pill.title = t("focusingOn");
       meta.appendChild(pill);
+    }
+
+    // Üst seviye görevde alt görev ilerlemesi rozeti (ör. 2/5)
+    if (!task.parentId) {
+      const kids = childrenOf(task.id);
+      if (kids.length) {
+        const kidsDone = kids.filter(k => k.done).length;
+        const pill = document.createElement("span");
+        pill.className = "focus-pill subtask-pill";
+        pill.textContent = `${kidsDone}/${kids.length}`;
+        pill.title = t("subtaskProgress");
+        meta.appendChild(pill);
+      }
     }
 
     const actions = document.createElement("div");
@@ -425,41 +481,137 @@
       makeIconButton(t("taskAriaDelete"), "🗑️", "danger", () => removeTask(task))
     );
 
+    // Alt görev ekleme düğmesi yalnızca üst seviye görevlerde (tek seviye derinlik)
+    if (!task.parentId) {
+      actions.insertBefore(
+        makeIconButton(t("subtaskAdd"), "＋", "subtask-btn", () => startSubtaskAdd(item, task)),
+        actions.lastElementChild
+      );
+    }
+
     item.append(checkbox, text, meta, actions);
     return item;
+  }
+
+  /* Alt görev ekleme satırı: üst görevin altında beliren satır içi giriş.
+     Enter/Ekle düğmesi ekler, Esc iptal eder, odak kaybolunca kaydedilir. */
+  function startSubtaskAdd(item, parentTask) {
+    if (item.querySelector(".subtask-add")) return;
+
+    const row = document.createElement("div");
+    row.className = "subtask-add";
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.maxLength = 120;
+    input.placeholder = t("subtaskPlaceholder");
+    input.setAttribute("aria-label", t("subtaskAria"));
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "subtask-add-btn";
+    addBtn.textContent = t("add");
+
+    row.append(input, addBtn);
+    item.appendChild(row);
+    input.focus();
+
+    let finished = false;
+    const finish = (commit) => {
+      if (finished) return;
+      finished = true;
+      if (commit) {
+        const value = input.value.trim();
+        if (value) {
+          state.tasks.push({
+            id: uid(), text: value.slice(0, 120), done: false,
+            createdAt: Date.now(), doneAt: null,
+            priority: 0, focus: 0, parentId: parentTask.id
+          });
+          save();
+        }
+      }
+      renderTasks();
+    };
+
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter")  { e.preventDefault(); finish(true); }
+      if (e.key === "Escape") { e.preventDefault(); finish(false); }
+    });
+    input.addEventListener("blur", () => finish(true));
+    addBtn.addEventListener("mousedown", (e) => e.preventDefault()); // odak kaybolmasın
+    addBtn.addEventListener("click", () => finish(true));
+  }
+
+  /* Silme: üst seviye bir görev, alt görevleriyle birlikte silinir.
+     Geri alma yalnızca silinen kayıtları geri koyar — silme toast'ı
+     açıkken eklenen yeni görevler korunur. Her kayıt, özgün sırasında
+     kendisinden sonra gelen ve hâlâ listede olan ilk komşusunun önüne
+     yerleşir; komşu kalmadıysa listenin sonuna eklenir. */
+  function restoreTasks(removed, snapshot) {
+    for (const task of removed) {
+      if (state.tasks.includes(task)) continue;
+      const originalIdx = snapshot.indexOf(task);
+      let inserted = false;
+      for (let i = originalIdx + 1; i < snapshot.length; i++) {
+        const nextIdx = state.tasks.indexOf(snapshot[i]);
+        if (nextIdx !== -1) {
+          state.tasks.splice(nextIdx, 0, task);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) state.tasks.push(task);
+    }
   }
 
   function removeTask(task) {
     const index = state.tasks.indexOf(task);
     if (index === -1) return;
-    state.tasks.splice(index, 1);
+
+    const snapshot = state.tasks.slice();
+    const kids = task.parentId ? [] : childrenOf(task.id);
+    const removed = [task, ...kids];
+
+    state.tasks = state.tasks.filter(t => !removed.includes(t));
     save(); renderTasks();
-    if (state.activeTaskId === task.id) renderFocusTask();
-    showToast(t("toastDeleted"), t("toastUndo"), () => {
-      state.tasks.splice(index, 0, task);
+    if (state.activeTaskId &&
+        (state.activeTaskId === task.id || kids.some(k => k.id === state.activeTaskId))) {
+      renderFocusTask();
+    }
+
+    const message = kids.length ? t("toastDeletedTree", { n: kids.length }) : t("toastDeleted");
+    showToast(message, t("toastUndo"), () => {
+      restoreTasks(removed, snapshot);
       save(); renderTasks(); renderFocusTask();
     });
   }
 
   function renderTasks() {
-    const tasks = visibleTasks();
-    els.list.replaceChildren(...tasks.map(buildTaskItem));
+    const groups = visibleGroups();
+    const items = [];
+    for (const parent of groups) {
+      items.push(buildTaskItem(parent));
+      for (const kid of childrenOf(parent.id)) items.push(buildTaskItem(kid));
+    }
+    els.list.replaceChildren(...items);
 
-    const total = state.tasks.length;
-    const done = state.tasks.filter(t => t.done).length;
+    const tops = topTasks();
+    const total = tops.length;
+    const done = tops.filter(t => t.done).length;
 
-    els.empty.textContent = tasks.length === 0
+    els.empty.textContent = groups.length === 0
       ? t(state.search.trim()
           ? "emptySearch"
           : state.filter === "active" ? "emptyActive"
           : state.filter === "done" ? "emptyDone" : "emptyAll")
       : "";
-    els.empty.hidden = tasks.length > 0;
+    els.empty.hidden = groups.length > 0;
 
     els.badge.textContent = `${done} / ${total}`;
     els.count.textContent = t("count", { done, total });
     els.progress.style.width = total ? `${(done / total) * 100}%` : "0%";
-    els.clearDone.disabled = done === 0;
+    els.clearDone.disabled = !state.tasks.some(t => t.done);
 
     $$(".chip", els.filters).forEach(chip => {
       chip.classList.toggle("is-active", chip.dataset.filter === state.filter);
@@ -633,6 +785,41 @@
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
 
+  /* ---------- CSV dışa aktarma (v3.1) ----------
+     CSV yalnızca görevleri içerir (tam yedek JSON'dır). UTF-8 BOM ve
+     RFC 4180 uyumlu kaçış: tırnak içinde çift tırnak, satır sonu CRLF. */
+  const csvEscape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  function exportTasksCsv() {
+    const rows = [["type", "text", "done", "priority", "focus_minutes", "parent_text", "created_at", "completed_at"]];
+    for (const parent of topTasks()) {
+      rows.push([
+        "task", parent.text, parent.done ? "yes" : "no", parent.priority,
+        parent.focus, "",
+        new Date(parent.createdAt).toISOString(),
+        parent.doneAt ? new Date(parent.doneAt).toISOString() : ""
+      ]);
+      for (const kid of childrenOf(parent.id)) {
+        rows.push([
+          "subtask", kid.text, kid.done ? "yes" : "no", kid.priority,
+          kid.focus, parent.text,
+          new Date(kid.createdAt).toISOString(),
+          kid.doneAt ? new Date(kid.doneAt).toISOString() : ""
+        ]);
+      }
+    }
+    const csv = "\uFEFF" + rows.map(r => r.map(csvEscape).join(",")).join("\r\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `small-steps-tasks-${todayKey()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
   function importBackup(file) {
     const reader = new FileReader();
     reader.onload = () => {
@@ -646,7 +833,11 @@
       if (!ok) { showToast(t("importInvalid")); return; }
       if (!window.confirm(t("importConfirm"))) return;
 
-      state.tasks = st.tasks.map(normalizeTask).filter(Boolean);
+      state.tasks = sanitizeTasks(st.tasks.map(normalizeTask).filter(Boolean));
+      // Odak görevi yalnızca hâlâ listede bir görevse geçerli
+      if (state.activeTaskId && !state.tasks.some(t => t.id === state.activeTaskId)) {
+        state.activeTaskId = null;
+      }
       const s = st.settings;
       state.settings.focus     = clampInt(s.focus, 1, 90, DEFAULT_SETTINGS.focus);
       state.settings.short     = clampInt(s.short, 1, 30, DEFAULT_SETTINGS.short);
@@ -914,7 +1105,7 @@
       state.tasks.unshift({
         id: uid(), text: text.slice(0, 120), done: false,
         createdAt: Date.now(), doneAt: null,
-        priority: 0, focus: 0
+        priority: 0, focus: 0, parentId: null
       });
       save(); renderTasks();
       els.form.reset(); els.input.focus();
@@ -942,6 +1133,7 @@
     });
 
     els.exportData.addEventListener("click", exportBackup);
+    els.exportCsv.addEventListener("click", exportTasksCsv);
     els.importData.addEventListener("click", () => els.importFile.click());
     els.importFile.addEventListener("change", () => {
       const file = els.importFile.files?.[0];
@@ -950,13 +1142,37 @@
     });
 
     els.clearDone.addEventListener("click", () => {
-      const removed = state.tasks.filter(t => t.done);
-      if (!removed.length) return;
-      state.tasks = state.tasks.filter(t => !t.done);
+      /* Tamamlanan görevler kalkar. Tamamlanmış bir üst görevin AÇIK alt
+         görevleri silinmez — üst seviyeye terfi eder (yetim kalmamaları için).
+         Toast sayısı, fiilen kaldırılan (tamamlanmış) kayıt sayısını verir. */
+      const doneTasks = state.tasks.filter(t => t.done);
+      if (!doneTasks.length) return;
+
+      const snapshot = state.tasks.slice();
+      const doneIds = new Set(doneTasks.map(t => t.id));
+      const removed = doneTasks.slice();
+      // Terfi, görev nesnelerini yerinde değiştirdiği için özgün ebeveynler
+      // mutasyondan ÖNCE ayrıca kaydedilmeli (anlık görüntü referans paylaşır).
+      const origParents = new Map(state.tasks.map(t => [t.id, t.parentId]));
+
+      state.tasks = state.tasks.filter(t => !doneIds.has(t.id));
+      for (const task of state.tasks) {
+        if (task.parentId && doneIds.has(task.parentId)) task.parentId = null;
+      }
       save(); renderTasks();
       showToast(t("toastCleared", { n: removed.length }), t("toastUndo"), () => {
-        state.tasks.push(...removed);
-        save(); renderTasks();
+        restoreTasks(removed, snapshot);
+        // Terfi edilen alt görevlerin parentId'sini geri getir — ama yalnızca
+        // terfi sırasında kendi alt görevini edinmediyse. Edinmişse üst seviyede
+        // kalır (tek seviye kuralı): ebeveynin altına geri konursa yeni alt
+        // görevi iki seviye derine gömülür ve listede görünmez olur.
+        for (const task of state.tasks) {
+          if (!task.parentId && origParents.get(task.id)) {
+            const hasOwnKids = state.tasks.some(t => t.parentId === task.id);
+            if (!hasOwnKids) task.parentId = origParents.get(task.id);
+          }
+        }
+        save(); renderTasks(); renderFocusTask();
       });
     });
 
