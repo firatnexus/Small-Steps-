@@ -245,6 +245,20 @@
     return `${keys.length} anahtar × 12 dil`;
   });
 
+  test("v3.2 anahtarları tüm dillerde var", () => {
+    const keys = ["repeatNone","repeatDaily","repeatWeekdays","repeatWeekly",
+                  "dueToday","dueTomorrow","toastReopenBlocked",
+                  "importTodoist","todoistConfirm","todoistDone","todoistInvalid"];
+    const eksik = [];
+    for (const code of SUPPORTED_LANGS) {
+      for (const k of keys) {
+        if (!TRANSLATIONS[code][k]) eksik.push(`${code}.${k}`);
+      }
+    }
+    assert(eksik.length === 0, `Eksik: ${eksik.join(", ")}`);
+    return `${keys.length} anahtar × 12 dil`;
+  });
+
   test("v3.1 anahtarları tüm dillerde var", () => {
     const keys = ["subtaskAdd","subtaskPlaceholder","subtaskAria","subtaskProgress",
                   "exportCsv","csvNote","toastDeletedTree"];

@@ -7,7 +7,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.1.0-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.2.0-267354?style=flat-square)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-installation)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-languages)
@@ -43,6 +43,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 ### 📝 Tasks
 
 - **Subtasks** — break a big task into smaller steps with ＋; the parent row shows a progress badge (e.g. 2/5)
+- **Recurring tasks** — repeat daily / weekdays / weekly with ↻; completing one spawns the next occurrence automatically, early completion jumps past the scheduled day
 - **Task-linked focus** — pick a task (◎) and every completed Pomodoro credits its minutes to that task
 - **Priorities** — none / low / medium / high, with a colored accent
 - **Search** — instant, diacritic-friendly (type "ikinci", find "İkinci")
@@ -64,6 +65,8 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 ### 💾 Data
 
 - **JSON export / import** — full backup of tasks, settings, history, theme and language
+- **Todoist import (CSV)** — load your Todoist CSV export: tasks, priorities, dates and one-level hierarchy transfer over
+- **CSV export** — open your tasks in spreadsheet apps (UTF-8 BOM + RFC 4180 compliant)
 - Everything stays in `localStorage` — no account, no server, no tracking
 
 ### 🎨 Interface

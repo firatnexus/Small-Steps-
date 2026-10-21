@@ -81,8 +81,8 @@ function readState(dom) {
 function readHistory(dom) {
   return JSON.parse(dom.window.localStorage.getItem(HISTORY_KEY) || "{}");
 }
-function todayKey() {
-  const d = new Date();
+function todayKey(date = new Date()) {
+  const d = date;
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 /* save() 120 ms debounce'lu olduğundan kalıcı depoya yazılmasını bekle */
@@ -274,7 +274,7 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     const csv = w.__lastBlob.__text;
     await test("UTF-8 BOM ile başlar ve başlık satırı tamdır", () => {
       assert(csv.charCodeAt(0) === 0xFEFF, "BOM yok");
-      assert(csv.startsWith("\uFEFF\"type\",\"text\",\"done\",\"priority\",\"focus_minutes\",\"parent_text\",\"created_at\",\"completed_at\""), "başlık yanlış");
+      assert(csv.startsWith("\uFEFF\"type\",\"text\",\"done\",\"priority\",\"focus_minutes\",\"parent_text\",\"repeat\",\"due_date\",\"created_at\",\"completed_at\""), "başlık yanlış (v3.2 sütunları: repeat, due_date)");
     });
     await test("Virgül ve tırnak içeren metin RFC 4180'e göre kaçırılır", () => {
       assert(csv.includes('"Süt, ""ekmek"" al\nve çay"'), "özel karakterli metin kaçırılmadı: " + JSON.stringify(csv));
@@ -431,13 +431,404 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
+  console.log("\n— Tekrarlayan görevler (v3.2) —");
+  {
+    const ayarlar = { focus: 25, short: 5, long: 15, longEvery: 4, autoStart: false, sound: false };
+    const gorev = (id, ekstra = {}) => ({ id, text: "İlaç iç", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, ...ekstra });
+    const durum = (tasks) => ({
+      state: { tasks, settings: ayarlar, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+      history: {}
+    });
+
+    // A) Günlük tekrar: tamamla → successor doğar
+    const domA = await launch(durum([gorev("r1", { repeat: "daily" })]));
+    const wA = domA.window;
+    wA.document.querySelector('.task[data-id="r1"] input[type="checkbox"]').click();
+    await settled();
+    await test("Tamamlanınca yeni occurrence doğar (geçmiş +1, dueAt = yarın)", () => {
+      const st = readState(domA);
+      const old = st.tasks.find(t => t.id === "r1");
+      const yeni = st.tasks.find(t => t.respawnedFrom === "r1");
+      assert(old && old.done === true, "eski occurrence tamamlanmadı");
+      assert(yeni, "yeni occurrence doğmadı");
+      eq(yeni.text, "İlaç iç", "yeni occurrence metni farklı");
+      eq(yeni.repeat, "daily", "yeni occurrence tekrarı taşımadı");
+      const yarın = todayKey(new Date(Date.now() + 86400000));
+      eq(yeni.dueAt, yarın, "dueAt yarın olmalı");
+      const h = readHistory(domA);
+      eq(h[todayKey()]?.done, 1, "geçmişe +1 yazılmadı");
+    });
+    await test("Görsel: iki satır, rozetler; ↻ yalnız aktif occurrence'ta", () => {
+      const satirlar = $$(domA, "#task-list .task");
+      eq(satirlar.length, 2, "iki occurrence da görünmeli");
+      const eski = $$(domA, '.task[data-id="r1"]')[0];
+      const yeniSatir = $$(domA, ".task").filter(li => li.dataset.id !== "r1")[0];
+      assert(eski && yeniSatir, "satırlar render olmadı");
+      assert(eski.querySelectorAll(".repeat-btn").length === 0, "tamamlanmış occurrence'ta ↻ olmamalı");
+      assert(yeniSatir.querySelectorAll(".repeat-btn").length === 1, "aktif occurrence'ta ↻ olmalı");
+      assert(yeniSatir.querySelector(".repeat-pill"), "tekrar rozeti yok");
+      assert(yeniSatir.querySelector(".due-pill"), "tarih rozeti yok");
+    });
+
+    // A devam) Tamamlananları temizle successor'a dokunmaz + geri alma
+    await test("Tamamlananları temizle successor'a dokunmaz; geri alma ikisini de korur", async () => {
+      wA.document.querySelector("#clear-done").click();
+      await settled();
+      let st = readState(domA);
+      assert(!st.tasks.some(t => t.id === "r1"), "tamamlanan eski occurrence temizlenmedi");
+      assert(st.tasks.some(t => t.respawnedFrom === "r1"), "successor yanlışlıkla silindi");
+      wA.document.querySelector("#toast button").click();
+      await settled();
+      st = readState(domA);
+      assert(st.tasks.some(t => t.id === "r1"), "geri alma eski occurrence'ı getirmedi");
+      assert(st.tasks.some(t => t.respawnedFrom === "r1"), "geri alma successor'ı kaybettirdi");
+    });
+
+    // A devam) Yeniden başlatma çoğaltmaz (tek successor)
+    await test("Yeniden başlatma successor'ı çoğaltmaz", async () => {
+      const kayit = readState(domA);
+      const domA2 = await launch({ state: kayit, history: readHistory(domA) });
+      await settled(300);
+      const st = readState(domA2);
+      eq(st.tasks.filter(t => t.respawnedFrom === "r1").length, 1, "yeniden başlatma successor çoğalttı");
+      domA2.window.close();
+    });
+
+    // B) Değiştirilmiş successor ile geri açma engellenir
+    const domB = await launch(durum([gorev("r1", { repeat: "daily" })]));
+    const wB = domB.window;
+    wB.document.querySelector('.task[data-id="r1"] input[type="checkbox"]').click();
+    await settled();
+    {
+      const st = readState(domB);
+      const yeni = st.tasks.find(t => t.respawnedFrom === "r1");
+      yeni.text = "İlaç iç (değişti)";
+      const domB2 = await launch({ state: st, history: readHistory(domB) });
+      const wB2 = domB2.window;
+      await settled(300);
+      const cb = wB2.document.querySelector('.task[data-id="r1"] input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new wB2.Event("change"));
+      await settled();
+      await test("Successor değiştiyse geri açma engellenir (iki kayıt korunur)", () => {
+        const st2 = readState(domB2);
+        const eski2 = st2.tasks.find(t => t.id === "r1");
+        const yeni2 = st2.tasks.find(t => t.respawnedFrom === "r1");
+        assert(eski2 && eski2.done === true, "engellenen geri açma görevi aktif yapmamalı");
+        assert(yeni2, "yeni occurrence silinmemeli");
+        eq($$(domB2, '.task[data-id="r1"] input[type="checkbox"]')[0].checked, true, "checkbox işareti kalmalı");
+        const h2 = readHistory(domB2);
+        eq(h2[todayKey()]?.done, 1, "geçmiş geri alınmamalı");
+      });
+      domB2.window.close();
+    }
+    domB.window.close();
+
+    // C) Dokunulmamış successor ile geri açma: successor silinir, istatistik geri alınır
+    const domC = await launch(durum([gorev("r1", { repeat: "daily" })]));
+    const wC = domC.window;
+    wC.document.querySelector('.task[data-id="r1"] input[type="checkbox"]').click();
+    await settled();
+    await test("Dokunulmamışsa geri açma successor'ı siler ve istatistiği geri alır", async () => {
+      const cb = wC.document.querySelector('.task[data-id="r1"] input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new wC.Event("change"));
+      await settled();
+      const st = readState(domC);
+      eq(st.tasks.length, 1, "successor silinmeli, eski kalmalı");
+      assert(st.tasks[0].done === false, "görev geri açılmadı");
+      assert(!st.tasks.some(t => t.respawnedFrom), "successor hâlâ duruyor");
+      const h = readHistory(domC);
+      eq(h[todayKey()]?.done, 0, "geçmiş geri alınmadı");
+    });
+    domC.window.close();
+
+    // D) Hafta içi: Cuma dueAt'li görev → Pazartesi'ye doğar
+    await test("Hafta içi kuralı: Cuma zamanlanmış görev Pazartesi'ye doğar", async () => {
+      let d = new Date();
+      while (d.getDay() !== 5) d.setDate(d.getDate() + 1);
+      const cuma = todayKey(d);
+      const pazartesi = todayKey(new Date(d.getTime() + 3 * 86400000));
+      const domD = await launch(durum([gorev("wd", { repeat: "weekdays", dueAt: cuma })]));
+      const wD = domD.window;
+      wD.document.querySelector('.task[data-id="wd"] input[type="checkbox"]').click();
+      await settled();
+      const succ = readState(domD).tasks.find(t => t.respawnedFrom === "wd");
+      assert(succ, "weekdays successor doğmadı");
+      eq(succ.dueAt, pazartesi, `Cuma (${cuma}) tamamlandı → ${pazartesi} beklenirdi, ${succ.dueAt} geldi`);
+      domD.window.close();
+    });
+
+    // E) Erken tamamlama (haftalık): dueAt bugünden ilerideyse successor dueAt+7
+    await test("Erken tamamlama zamanlanan günün ötesine atlar (haftalık)", async () => {
+      const dueAt = todayKey(new Date(Date.now() + 10 * 86400000));
+      const beklenen = todayKey(new Date(Date.now() + 17 * 86400000));
+      const domE = await launch(durum([gorev("wk", { repeat: "weekly", dueAt })]));
+      const wE = domE.window;
+      wE.document.querySelector('.task[data-id="wk"] input[type="checkbox"]').click();
+      await settled();
+      const succ = readState(domE).tasks.find(t => t.respawnedFrom === "wk");
+      assert(succ, "weekly successor doğmadı");
+      eq(succ.dueAt, beklenen, `zamanlanan günün 7 gün sonrası (${beklenen}) beklenirdi, ${succ.dueAt} geldi`);
+      domE.window.close();
+    });
+
+    // F) ↻ düğmesi kısıtları: done görevde ve alt görevi olan üstte yok
+    await test("↻ düğmesi done görevde ve alt görevli üstte görünmez", async () => {
+      const domF = await launch(durum([
+        gorev("r1", { repeat: "daily", done: true, doneAt: Date.now() }),
+        { id: "p2", text: "Alt görevli iş", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0 },
+        { id: "k2", text: "Altı", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, parentId: "p2" }
+      ]));
+      await settled(300);
+      const doneSatir = $$(domF, '.task[data-id="r1"]')[0];
+      const p2satir = $$(domF, '.task[data-id="p2"]')[0];
+      assert(doneSatir && p2satir, "satırlar render olmadı");
+      assert(doneSatir.querySelectorAll(".repeat-btn").length === 0, "done görevde ↻ görünmemeli");
+      assert(p2satir.querySelectorAll(".repeat-btn").length === 0, "alt görevi olan görevde ↻ görünmemeli");
+      domF.window.close();
+    });
+  }
+
+  console.log("\n— Tekrarlayan görevler: danışman düzeltmeleri (v3.2) —");
+  {
+    const ayarlar = { focus: 25, short: 5, long: 15, longEvery: 4, autoStart: false, sound: false };
+    const durum = (tasks, history = {}) => ({
+      state: { tasks, settings: ayarlar, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+      history
+    });
+
+    // 1) ＋ ve ↻ birbirini dışlar: tekrarlayan görevde ＋ yok
+    await test("Tekrarlayan görevde ＋ düğmesi görünmez (kontroller birbirini dışlar)", async () => {
+      const dom = await launch(durum([
+        { id: "r1", text: "İlaç iç", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, repeat: "daily" }
+      ]));
+      await settled(300);
+      const satir = $$(dom, '.task[data-id="r1"]')[0];
+      assert(satir.querySelectorAll(".repeat-btn").length === 1, "↻ görünmeli");
+      assert(satir.querySelectorAll(".subtask-btn").length === 0, "tekrarlayan görevde ＋ görünmemeli");
+      dom.window.close();
+    });
+
+    // 2) İçe aktarılan repeat+children verisi: sanitize tekrarı kaldırır
+    await test("Alt görevli görevin tekrarı içe aktarımda temizlenir", async () => {
+      const dom = await launch(durum([
+        { id: "p", text: "Üst", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, repeat: "daily" },
+        { id: "k", text: "Alt", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, parentId: "p" }
+      ]));
+      await settled(300);
+      const st = readState(dom);
+      const ust = st.tasks.find(t => t.id === "p");
+      assert(ust.repeat === null, "alt görevli görevde tekrar kalmamalı");
+      dom.window.close();
+    });
+
+    // 3) Successor'ın tekrarı ↻ ile değiştirilirse geri açma engellenir
+    await test("Successor'ın tekrar kuralı değişirse geri açma engellenir", async () => {
+      const dom = await launch(durum([
+        { id: "r1", text: "İlaç iç", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, repeat: "daily" }
+      ]));
+      const w = dom.window;
+      w.document.querySelector('.task[data-id="r1"] input[type="checkbox"]').click();
+      await settled();
+      // successor'ın ↻ düğmesine bas (daily → weekdays)
+      const succSatir = $$(dom, ".task").filter(li => li.dataset.id !== "r1")[0];
+      succSatir.querySelector(".repeat-btn").click();
+      await settled();
+      const st = readState(dom);
+      assert(st.tasks.find(t => t.respawnedFrom).repeat === "weekdays", "successor tekrarı değişmedi");
+      // eskiyi geri açmayı dene
+      const cb = w.document.querySelector('.task[data-id="r1"] input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new w.Event("change"));
+      await settled();
+      const st2 = readState(dom);
+      assert(st2.tasks.find(t => t.id === "r1").done === true, "değişmiş tekrar güvenli sayılmamalı");
+      assert(st2.tasks.some(t => t.respawnedFrom === "r1"), "successor silinmemeli");
+      dom.window.close();
+    });
+
+    // 4) Successor silinmişse (A→B→C, B silindi): geri açma serbest — belgelenmiş davranış
+    await test("Successor kullanıcı tarafından silindiyse geri açma serbesttir (A ve C aktif kalır)", async () => {
+      const dom = await launch(durum([
+        { id: "a", text: "Seri görevi", done: true, createdAt: 1, doneAt: Date.now(), priority: 0, focus: 0, repeat: "daily" },
+        { id: "c", text: "Seri görevi", done: false, createdAt: 2, doneAt: null, priority: 0, focus: 0, repeat: "daily", respawnedFrom: "b-silindi" }
+      ]));
+      const w = dom.window;
+      await settled(300);
+      const cb = w.document.querySelector('.task[data-id="a"] input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new w.Event("change"));
+      await settled();
+      const st = readState(dom);
+      assert(st.tasks.find(t => t.id === "a").done === false, "silinmiş successor geri açmayı engellememeli");
+      assert(st.tasks.some(t => t.id === "c"), "C durmalı");
+      dom.window.close();
+    });
+
+    // 5) Gün aşırı muhasebe: dün tamamlanan bugün geri açılırsa DÜN sayacı düşer
+    await test("Gün aşırı geri açma: sayaç tamamlanılan güne yazılır (bugüne değil)", async () => {
+      const dun = todayKey(new Date(Date.now() - 86400000));
+      const dom = await launch(durum(
+        [{ id: "r1", text: "İlaç iç", done: true, createdAt: 1, doneAt: Date.now() - 86400000, priority: 0, focus: 0, repeat: "daily" }],
+        { [dun]: { focus: 0, done: 0 }, [todayKey()]: { focus: 10, done: 4 } }
+      ));
+      const w = dom.window;
+      await settled(300);
+      const cb = w.document.querySelector('.task[data-id="r1"] input[type="checkbox"]');
+      cb.checked = false;
+      cb.dispatchEvent(new w.Event("change"));
+      await settled();
+      const h = readHistory(dom);
+      eq(h[dun]?.done, 0, "dünün sayacı düşmeli");
+      eq(h[todayKey()]?.done, 4, "bugünün sayacı değişmemeli");
+      dom.window.close();
+    });
+  }
+
+  console.log("\n— Todoist CSV içe aktarma (v3.2) —");
+  {
+    const durumBos = () => ({ state: { tasks: [], settings: { focus: 25, short: 5, long: 15, longEvery: 4, autoStart: false, sound: false }, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null } });
+    const fixtureVirgul = '\uFEFFTYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE\r\n'
+      + 'section,Haftalık plan,,1,1,,,,,\r\n'
+      + 'task,"Süt, ""ekmek"" al",,4,1,,,2026-10-25,en,Europe/Istanbul\r\n'
+      + 'task,Muz al,,2,2,,,,\r\n'
+      + 'note,Haftalık not,,1,2,,,,,\r\n'
+      + 'task,Spor salonu,,1,1,,,24 Oct 2026,en,\r\n';
+    const fixtureNoktali = fixtureVirgul.replace(/,/g, ";").replace(/";/g, '";');
+
+    const dom = await launch();
+    const w = dom.window;
+    const dosyaYukle = async (icerik, kabul) => {
+      w.__lastConfirm = null;
+      w.confirm = (msg) => { w.__lastConfirm = msg; return kabul; };
+      const file = new w.File([icerik], "todoist.csv", { type: "text/csv" });
+      Object.defineProperty(w.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w.document.querySelector("#import-todoist-file").dispatchEvent(new w.Event("change"));
+      await settled(400);
+    };
+
+    await test("Virgüllü CSV: görevler, hiyerarşi, öncelik ve tarih aktarılır", async () => {
+      await dosyaYukle(fixtureVirgul, true);
+      const st = readState(dom);
+      eq(st.tasks.length, 3, "3 görev eklenmeliydi");
+      const sut = st.tasks.find(t => t.text === 'Süt, "ekmek" al');
+      assert(sut, "tırnak kaçışlı görev gelmedi");
+      eq(sut.priority, 0, "p4 → 0 eşlenmeli");
+      eq(sut.dueAt, "2026-10-25", "ISO tarih aktarılmadı");
+      const muz = st.tasks.find(t => t.text === "Muz al");
+      assert(muz && muz.parentId === sut.id, "INDENT 2 alt görev olmalı");
+      eq(muz.priority, 2, "p2 → 2 eşlenmeli");
+      const spor = st.tasks.find(t => t.text === "Spor salonu");
+      assert(spor, "Spor salonu gelmedi");
+      eq(spor.priority, 3, "p1 → 3 eşlenmeli");
+      assert(!spor.dueAt, "doğal dil tarihi aktarılmamalı");
+      eq($$(dom, "#task-list .task").length, 3, "görevler render olmadı");
+      // onay mesajı: 3 görev + 2 atlanan satır (section, note) + 1 atlanan tarih (doğal dil)
+      assert(w.__lastConfirm && w.__lastConfirm.includes("3") && w.__lastConfirm.includes("2") && w.__lastConfirm.includes("1"),
+        "onay mesajı görev/satır/tarih sayılarını içermeli: " + w.__lastConfirm);
+    });
+
+    await test("Noktalı virgüllü CSV de aynı sonucu verir", async () => {
+      const dom2 = await launch();
+      const w2 = dom2.window;
+      w2.confirm = () => true;
+      const file = new w2.File([fixtureNoktali], "todoist.csv", { type: "text/csv" });
+      Object.defineProperty(w2.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w2.document.querySelector("#import-todoist-file").dispatchEvent(new w2.Event("change"));
+      await settled(400);
+      const st = readState(dom2);
+      eq(st.tasks.length, 3, "noktalı virgül CSV'de 3 görev beklenirdi");
+      dom2.window.close();
+    });
+
+    await test("Geçersiz dosya reddedilir (durum değişmez)", async () => {
+      const dom3 = await launch();
+      const w3 = dom3.window;
+      w3.confirm = () => true;
+      const file = new w3.File(["bu,bir,todoist,dosyasi,degil"], "x.csv", { type: "text/csv" });
+      Object.defineProperty(w3.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w3.document.querySelector("#import-todoist-file").dispatchEvent(new w3.Event("change"));
+      await settled(400);
+      const st = readState(dom3);
+      eq(st.tasks.length, 0, "geçersiz dosya görev eklememeli");
+      dom3.window.close();
+    });
+
+    await test("Kapanmamış tırnaklı (bozuk) CSV reddedilir", async () => {
+      const dom5 = await launch(durumBos());
+      const w5 = dom5.window;
+      w5.confirm = () => true;
+      const bozuk = '\uFEFFTYPE,CONTENT,PRIORITY,INDENT\r\ntask,"unterminated';
+      const file = new w5.File([bozuk], "bozuk.csv", { type: "text/csv" });
+      Object.defineProperty(w5.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w5.document.querySelector("#import-todoist-file").dispatchEvent(new w5.Event("change"));
+      await settled(400);
+      eq(readState(dom5).tasks.length, 0, "bozuk CSV görev eklememeli");
+      dom5.window.close();
+    });
+
+    await test("İmkânsız takvim tarihi reddedilir (2026-13-45)", async () => {
+      const dom6 = await launch(durumBos());
+      const w6 = dom6.window;
+      w6.__lastConfirm = null;
+      w6.confirm = (msg) => { w6.__lastConfirm = msg; return true; };
+      const csv = '\uFEFFTYPE,CONTENT,PRIORITY,INDENT,DATE\r\ntask,Geçersiz tarihli,1,1,2026-13-45\r\ntask,Geçerli tarihli,1,1,2026-10-25\r\n';
+      const file = new w6.File([csv], "t.csv", { type: "text/csv" });
+      Object.defineProperty(w6.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w6.document.querySelector("#import-todoist-file").dispatchEvent(new w6.Event("change"));
+      await settled(400);
+      const st = readState(dom6);
+      eq(st.tasks.length, 2, "iki görev de eklenmeli");
+      const gecersiz = st.tasks.find(t => t.text === "Geçersiz tarihli");
+      const gecerli = st.tasks.find(t => t.text === "Geçerli tarihli");
+      assert(!gecersiz.dueAt, "imkânsız tarih aktarılmamalı");
+      eq(gecerli.dueAt, "2026-10-25", "geçerli tarih aktarılmalı");
+      assert(w6.__lastConfirm && w6.__lastConfirm.includes("1"), "atlanan tarih sayısı onayda görünmeli: " + w6.__lastConfirm);
+      dom6.window.close();
+    });
+
+    await test("Bölüm satırı ebeveyn hafızasını sıfırlar (bölüm sonrası INDENT 2 üst seviye olur)", async () => {
+      const dom7 = await launch(durumBos());
+      const w7 = dom7.window;
+      w7.confirm = () => true;
+      const csv = '\uFEFFTYPE,CONTENT,PRIORITY,INDENT\r\n'
+        + 'task,Birinci bölüm görevi,1,1\r\n'
+        + 'section,Yeni bölüm,,1\r\n'
+        + 'task,Bölüm sonrası girintili,1,2\r\n';
+      const file = new w7.File([csv], "b.csv", { type: "text/csv" });
+      Object.defineProperty(w7.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w7.document.querySelector("#import-todoist-file").dispatchEvent(new w7.Event("change"));
+      await settled(400);
+      const st = readState(dom7);
+      const girintili = st.tasks.find(t => t.text === "Bölüm sonrası girintili");
+      assert(girintili && girintili.parentId === null, "bölüm sonrası INDENT 2 görev önceki bölüme bağlanmamalı");
+      dom7.window.close();
+    });
+
+    await test("Onay reddedilirse hiçbir şey eklenmez", async () => {
+      const dom4 = await launch();
+      const w4 = dom4.window;
+      w4.confirm = () => false;
+      const file = new w4.File([fixtureVirgul], "todoist.csv", { type: "text/csv" });
+      Object.defineProperty(w4.document.querySelector("#import-todoist-file"), "files", { value: [file] });
+      w4.document.querySelector("#import-todoist-file").dispatchEvent(new w4.Event("change"));
+      await settled(400);
+      const st = readState(dom4);
+      eq(st.tasks.length, 0, "iptal edildiğinde görev eklenmemeli");
+      dom4.window.close();
+    });
+    dom.window.close();
+  }
+
   console.log("\n— JSON dosya yoluyla içe aktarma (gerçek FileReader akışı) —");
   {
     const dom = await launch({
       state: {
         tasks: [
           { id: "p", text: "Ana iş", done: false, createdAt: 1, doneAt: null, priority: 2, focus: 30 },
-          { id: "k", text: "Alt adım", done: true, createdAt: 1, doneAt: 5, priority: 0, focus: 0, parentId: "p" }
+          { id: "k", text: "Alt adım", done: true, createdAt: 1, doneAt: 5, priority: 0, focus: 0, parentId: "p" },
+          { id: "r", text: "Tekrarlayan iş", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, repeat: "weekly", dueAt: "2026-10-28", respawnedFrom: "eski" }
         ],
         settings: { focus: 50, short: 10, long: 20, longEvery: 3, autoStart: true, sound: false },
         stats: { date: todayKey(), focusMinutes: 7 }, filter: "active", search: "x", activeTaskId: "p"
@@ -462,7 +853,7 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
 
     await test("Dosyadan geri yükleme görevleri, hiyerarşiyi ve ayarları getirir", () => {
       const st = readState(dom2);
-      eq(st.tasks.length, 2, "görevler geri gelmedi");
+      eq(st.tasks.length, 3, "görevler geri gelmedi");
       const kid = st.tasks.find(t => t.text === "Alt adım");
       assert(kid && kid.parentId === "p", "hiyerarşi kayboldu");
       assert(kid.done === true, "tamamlanma durumu kayboldu");
@@ -471,6 +862,9 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       eq(st.settings.focus, 50, "ayarlar geri gelmedi");
       assert(st.settings.autoStart === true, "autoStart kayboldu");
       eq(st.activeTaskId, "p", "odak görevi kayboldu");
+      const tek = st.tasks.find(t => t.text === "Tekrarlayan iş");
+      assert(tek && tek.repeat === "weekly" && tek.dueAt === "2026-10-28" && tek.respawnedFrom === "eski",
+        "tekrar/tarih/respawnedFrom alanları yedekle geri gelmedi");
       eq($$(dom2, "#task-list .task.subtask").length, 1, "alt görev render olmadı");
     });
     await test("Geçmiş de dosyayla geri gelir", () => {

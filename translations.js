@@ -75,7 +75,19 @@
       subtaskAdd: "Add subtask", subtaskPlaceholder: "A smaller step…", subtaskAria: "New subtask",
       subtaskProgress: "Subtask progress",
       exportCsv: "Download tasks (CSV)", csvNote: "CSV contains only your tasks. For a full backup use the JSON export.",
-      toastDeletedTree: "Task deleted with {n} subtask(s)."
+      toastDeletedTree: "Task deleted with {n} subtask(s).",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "No repeat",
+      repeatDaily: "Repeats daily",
+      repeatWeekdays: "Repeats on weekdays",
+      repeatWeekly: "Repeats weekly",
+      dueToday: "today",
+      dueTomorrow: "tomorrow",
+      toastReopenBlocked: "This recurring task can't be reopened because its next occurrence was changed.",
+      importTodoist: "Import from Todoist (CSV)",
+      todoistConfirm: "{n} tasks will be added, {m} rows skipped (sections, notes) and {d} due date(s) omitted (unsupported formats). Continue?",
+      todoistDone: "{n} tasks imported from Todoist.",
+      todoistInvalid: "This file is not a valid Todoist CSV export."
     },
     tr: {
       name: "Türkçe", langLabel: "Dil", themeToggle: "Temayı değiştir",
@@ -140,7 +152,19 @@
       subtaskAdd: "Alt görev ekle", subtaskPlaceholder: "Daha küçük bir adım…", subtaskAria: "Yeni alt görev",
       subtaskProgress: "Alt görev ilerlemesi",
       exportCsv: "Görevleri indir (CSV)", csvNote: "CSV yalnızca görevleri içerir. Tam yedek için JSON dışa aktarmayı kullan.",
-      toastDeletedTree: "Görev, {n} alt göreviyle birlikte silindi."
+      toastDeletedTree: "Görev, {n} alt göreviyle birlikte silindi.",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Tekrar yok",
+      repeatDaily: "Her gün tekrar",
+      repeatWeekdays: "Hafta içi tekrar",
+      repeatWeekly: "Her hafta tekrar",
+      dueToday: "bugün",
+      dueTomorrow: "yarın",
+      toastReopenBlocked: "Bu tekrarlayan görev geri açılamaz — yeni tekrarı değiştirildi.",
+      importTodoist: "Todoist'ten içe aktar (CSV)",
+      todoistConfirm: "{n} görev eklenir, {m} satır atlanır (bölüm, not) ve {d} tarih atlanır (desteklenmeyen biçim). Devam edilsin mi?",
+      todoistDone: "Todoist'ten {n} görev eklendi.",
+      todoistInvalid: "Bu dosya geçerli bir Todoist CSV dosyası değil."
     },
     es: {
       name: "Español", langLabel: "Idioma", themeToggle: "Cambiar tema",
@@ -205,7 +229,19 @@
       subtaskAdd: "Añadir subtarea", subtaskPlaceholder: "Un paso más pequeño…", subtaskAria: "Nueva subtarea",
       subtaskProgress: "Progreso de las subtareas",
       exportCsv: "Descargar tareas (CSV)", csvNote: "El CSV solo contiene tus tareas. Para una copia completa usa la exportación JSON.",
-      toastDeletedTree: "Tarea eliminada con {n} subtarea(s)."
+      toastDeletedTree: "Tarea eliminada con {n} subtarea(s).",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Sin repetición",
+      repeatDaily: "Se repite a diario",
+      repeatWeekdays: "Se repite entre semana",
+      repeatWeekly: "Se repite cada semana",
+      dueToday: "hoy",
+      dueTomorrow: "mañana",
+      toastReopenBlocked: "Esta tarea recurrente no se puede reabrir: su próxima repetición fue modificada.",
+      importTodoist: "Importar de Todoist (CSV)",
+      todoistConfirm: "Se añadirán {n} tareas, se omitirán {m} filas (secciones, notas) y {d} fecha(s) vencida(s) omitida(s) (formatos no compatibles). ¿Continuar?",
+      todoistDone: "{n} tareas importadas de Todoist.",
+      todoistInvalid: "Este archivo no es una exportación CSV válida de Todoist."
     },
     fr: {
       name: "Français", langLabel: "Langue", themeToggle: "Changer de thème",
@@ -270,7 +306,19 @@
       subtaskAdd: "Ajouter une sous-tâche", subtaskPlaceholder: "Une étape plus petite…", subtaskAria: "Nouvelle sous-tâche",
       subtaskProgress: "Avancement des sous-tâches",
       exportCsv: "Télécharger les tâches (CSV)", csvNote: "Le CSV ne contient que vos tâches. Pour une sauvegarde complète, utilisez l'export JSON.",
-      toastDeletedTree: "Tâche supprimée avec {n} sous-tâche(s)."
+      toastDeletedTree: "Tâche supprimée avec {n} sous-tâche(s).",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Sans répétition",
+      repeatDaily: "Se répète chaque jour",
+      repeatWeekdays: "Se répète en semaine",
+      repeatWeekly: "Se répète chaque semaine",
+      dueToday: "aujourd'hui",
+      dueTomorrow: "demain",
+      toastReopenBlocked: "Cette tâche récurrente ne peut pas être rouverte : sa prochaine occurrence a été modifiée.",
+      importTodoist: "Importer depuis Todoist (CSV)",
+      todoistConfirm: "{n} tâches seront ajoutées, {m} lignes ignorées (sections, notes) et {d} date(s) d'échéance omise(s) (formats non pris en charge). Continuer ?",
+      todoistDone: "{n} tâches importées depuis Todoist.",
+      todoistInvalid: "Ce fichier n'est pas une exportation CSV Todoist valide."
     },
     de: {
       name: "Deutsch", langLabel: "Sprache", themeToggle: "Design wechseln",
@@ -335,7 +383,19 @@
       subtaskAdd: "Unteraufgabe hinzufügen", subtaskPlaceholder: "Ein kleinerer Schritt…", subtaskAria: "Neue Unteraufgabe",
       subtaskProgress: "Fortschritt der Unteraufgaben",
       exportCsv: "Aufgaben herunterladen (CSV)", csvNote: "Die CSV enthält nur deine Aufgaben. Für ein vollständiges Backup nutze den JSON-Export.",
-      toastDeletedTree: "Aufgabe mit {n} Unteraufgabe(n) gelöscht."
+      toastDeletedTree: "Aufgabe mit {n} Unteraufgabe(n) gelöscht.",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Keine Wiederholung",
+      repeatDaily: "Wiederholt sich täglich",
+      repeatWeekdays: "Wiederholt sich werktags",
+      repeatWeekly: "Wiederholt sich wöchentlich",
+      dueToday: "heute",
+      dueTomorrow: "morgen",
+      toastReopenBlocked: "Diese wiederkehrende Aufgabe kann nicht wieder geöffnet werden – ihr nächstes Vorkommen wurde geändert.",
+      importTodoist: "Aus Todoist importieren (CSV)",
+      todoistConfirm: "{n} Aufgaben werden hinzugefügt, {m} Zeilen übersprungen (Abschnitte, Notizen) und {d} Fälligkeitsdatum/-termine ausgelassen (nicht unterstützte Formate). Fortfahren?",
+      todoistDone: "{n} Aufgaben aus Todoist importiert.",
+      todoistInvalid: "Diese Datei ist kein gültiger Todoist-CSV-Export."
     },
     pt: {
       name: "Português", langLabel: "Idioma", themeToggle: "Alternar tema",
@@ -400,7 +460,19 @@
       subtaskAdd: "Adicionar subtarefa", subtaskPlaceholder: "Um passo menor…", subtaskAria: "Nova subtarefa",
       subtaskProgress: "Progresso das subtarefas",
       exportCsv: "Baixar tarefas (CSV)", csvNote: "O CSV contém apenas as suas tarefas. Para uma cópia completa, use a exportação JSON.",
-      toastDeletedTree: "Tarefa eliminada com {n} subtarefa(s)."
+      toastDeletedTree: "Tarefa eliminada com {n} subtarefa(s).",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Sem repetição",
+      repeatDaily: "Repete diariamente",
+      repeatWeekdays: "Repete em dias úteis",
+      repeatWeekly: "Repete semanalmente",
+      dueToday: "hoje",
+      dueTomorrow: "amanhã",
+      toastReopenBlocked: "Esta tarefa recorrente não pode ser reaberta: sua próxima ocorrência foi alterada.",
+      importTodoist: "Importar do Todoist (CSV)",
+      todoistConfirm: "{n} tarefas serão adicionadas, {m} linhas ignoradas (seções, notas) e {d} data(s) de vencimento omitida(s) (formatos não suportados). Continuar?",
+      todoistDone: "{n} tarefas importadas do Todoist.",
+      todoistInvalid: "Este arquivo não é uma exportação CSV válida do Todoist."
     },
     it: {
       name: "Italiano", langLabel: "Lingua", themeToggle: "Cambia tema",
@@ -465,7 +537,19 @@
       subtaskAdd: "Aggiungi sotto-attività", subtaskPlaceholder: "Un passo più piccolo…", subtaskAria: "Nuova sotto-attività",
       subtaskProgress: "Avanzamento delle sotto-attività",
       exportCsv: "Scarica le attività (CSV)", csvNote: "Il CSV contiene solo le tue attività. Per un backup completo usa l'esportazione JSON.",
-      toastDeletedTree: "Attività eliminata con {n} sotto-attività."
+      toastDeletedTree: "Attività eliminata con {n} sotto-attività.",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Senza ripetizione",
+      repeatDaily: "Si ripete ogni giorno",
+      repeatWeekdays: "Si ripete nei giorni feriali",
+      repeatWeekly: "Si ripete ogni settimana",
+      dueToday: "oggi",
+      dueTomorrow: "domani",
+      toastReopenBlocked: "Questa attività ricorrente non può essere riaperta: la sua prossima occorrenza è stata modificata.",
+      importTodoist: "Importa da Todoist (CSV)",
+      todoistConfirm: "Verranno aggiunte {n} attività, saltate {m} righe (sezioni, note) e omesse {d} date di scadenza (formati non supportati). Continuare?",
+      todoistDone: "{n} attività importate da Todoist.",
+      todoistInvalid: "Questo file non è un'esportazione CSV Todoist valida."
     },
     hi: {
       name: "हिन्दी", langLabel: "भाषा", themeToggle: "थीम बदलें",
@@ -530,7 +614,19 @@
       subtaskAdd: "उप-कार्य जोड़ें", subtaskPlaceholder: "एक और छोटा कदम…", subtaskAria: "नया उप-कार्य",
       subtaskProgress: "उप-कार्यों की प्रगति",
       exportCsv: "कार्य डाउनलोड करें (CSV)", csvNote: "CSV में केवल आपके कार्य होते हैं। पूर्ण बैकअप के लिए JSON निर्यात का उपयोग करें।",
-      toastDeletedTree: "कार्य, {n} उप-कार्यों सहित हटाया गया।"
+      toastDeletedTree: "कार्य, {n} उप-कार्यों सहित हटाया गया।",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "दोहराव नहीं",
+      repeatDaily: "हर दिन दोहराता है",
+      repeatWeekdays: "सप्ताह के दिनों में दोहराता है",
+      repeatWeekly: "हर हफ्ते दोहराता है",
+      dueToday: "आज",
+      dueTomorrow: "कल",
+      toastReopenBlocked: "यह आवर्ती कार्य फिर से नहीं खोला जा सकता — इसकी अगली पुनरावृत्ति बदल दी गई है।",
+      importTodoist: "Todoist से आयात करें (CSV)",
+      todoistConfirm: "{n} कार्य जोड़े जाएँगे, {m} पंक्तियाँ छोड़ी जाएँगी (सेक्शन, नोट्स) और {d} तिथियाँ छोड़ी जाएँगी (असमर्थित प्रारूप)। जारी रखें?",
+      todoistDone: "Todoist से {n} कार्य आयात किए गए।",
+      todoistInvalid: "यह फ़ाइल मान्य Todoist CSV निर्यात नहीं है।"
     },
     ar: {
       name: "العربية", langLabel: "اللغة", themeToggle: "تبديل المظهر",
@@ -595,7 +691,19 @@
       subtaskAdd: "إضافة مهمة فرعية", subtaskPlaceholder: "خطوة أصغر…", subtaskAria: "مهمة فرعية جديدة",
       subtaskProgress: "تقدم المهام الفرعية",
       exportCsv: "تنزيل المهام (CSV)", csvNote: "ملف CSV يحتوي على مهامك فقط. للحصول على نسخة كاملة استخدم تصدير JSON.",
-      toastDeletedTree: "تم حذف المهمة مع {n} مهمة فرعية."
+      toastDeletedTree: "تم حذف المهمة مع {n} مهمة فرعية.",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "بدون تكرار",
+      repeatDaily: "يتكرر يوميًا",
+      repeatWeekdays: "يتكرر في أيام العمل",
+      repeatWeekly: "يتكرر أسبوعيًا",
+      dueToday: "اليوم",
+      dueTomorrow: "غدًا",
+      toastReopenBlocked: "لا يمكن إعادة فتح هذه المهمة المتكررة — تم تعديل تكرارها التالي.",
+      importTodoist: "استيراد من Todoist (CSV)",
+      todoistConfirm: "سيتم إضافة {n} مهمة، وتخطي {m} صفًا (أقسام، ملاحظات)، وحذف {d} تاريخ استحقاق (تنسيقات غير مدعومة). هل تريد المتابعة؟",
+      todoistDone: "تم استيراد {n} مهمة من Todoist.",
+      todoistInvalid: "هذا الملف ليس تصدير CSV صالحًا من Todoist."
     },
     zh: {
       name: "中文", langLabel: "语言", themeToggle: "切换主题",
@@ -660,7 +768,19 @@
       subtaskAdd: "添加子任务", subtaskPlaceholder: "更小的一步…", subtaskAria: "新子任务",
       subtaskProgress: "子任务进度",
       exportCsv: "下载任务 (CSV)", csvNote: "CSV 仅包含你的任务。完整备份请使用 JSON 导出。",
-      toastDeletedTree: "任务已连同 {n} 个子任务删除。"
+      toastDeletedTree: "任务已连同 {n} 个子任务删除。",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "不重复",
+      repeatDaily: "每天重复",
+      repeatWeekdays: "工作日重复",
+      repeatWeekly: "每周重复",
+      dueToday: "今天",
+      dueTomorrow: "明天",
+      toastReopenBlocked: "此重复任务无法重新打开——它的下一次重复已被修改。",
+      importTodoist: "从 Todoist 导入 (CSV)",
+      todoistConfirm: "将添加 {n} 个任务，跳过 {m} 行（分区、备注），并省略 {d} 个截止日期（不支持的格式）。继续吗？",
+      todoistDone: "已从 Todoist 导入 {n} 个任务。",
+      todoistInvalid: "此文件不是有效的 Todoist CSV 导出文件。"
     },
     ja: {
       name: "日本語", langLabel: "言語", themeToggle: "テーマを切り替え",
@@ -725,7 +845,19 @@
       subtaskAdd: "サブタスクを追加", subtaskPlaceholder: "もっと小さい一歩…", subtaskAria: "新しいサブタスク",
       subtaskProgress: "サブタスクの進捗",
       exportCsv: "タスクをダウンロード (CSV)", csvNote: "CSVにはタスクのみが含まれます。完全なバックアップにはJSON書き出しをご利用ください。",
-      toastDeletedTree: "タスクをサブタスク{n}件と一緒に削除しました。"
+      toastDeletedTree: "タスクをサブタスク{n}件と一緒に削除しました。",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "繰り返しなし",
+      repeatDaily: "毎日繰り返す",
+      repeatWeekdays: "平日に繰り返す",
+      repeatWeekly: "毎週繰り返す",
+      dueToday: "今日",
+      dueTomorrow: "明日",
+      toastReopenBlocked: "この繰り返しタスクは再開できません — 次回の繰り返しが変更されました。",
+      importTodoist: "Todoist からインポート (CSV)",
+      todoistConfirm: "{n} 件のタスクを追加し、{m} 行をスキップし（セクション、メモ）、{d} 件の期日を省略します（未対応の形式）。続けますか？",
+      todoistDone: "Todoist から {n} 件のタスクをインポートしました。",
+      todoistInvalid: "このファイルは有効な Todoist の CSV エクスポートではありません。"
     },
     ru: {
       name: "Русский", langLabel: "Язык", themeToggle: "Сменить тему",
@@ -790,7 +922,19 @@
       subtaskAdd: "Добавить подзадачу", subtaskPlaceholder: "Шаг поменьше…", subtaskAria: "Новая подзадача",
       subtaskProgress: "Прогресс подзадач",
       exportCsv: "Скачать задачи (CSV)", csvNote: "CSV содержит только ваши задачи. Для полной резервной копии используйте экспорт JSON.",
-      toastDeletedTree: "Задача удалена вместе с {n} подзадачей(ами)."
+      toastDeletedTree: "Задача удалена вместе с {n} подзадачей(ами).",
+      /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
+      repeatNone: "Без повтора",
+      repeatDaily: "Повторяется ежедневно",
+      repeatWeekdays: "Повторяется по будням",
+      repeatWeekly: "Повторяется еженедельно",
+      dueToday: "сегодня",
+      dueTomorrow: "завтра",
+      toastReopenBlocked: "Эту повторяющуюся задачу нельзя открыть заново — её следующее повторение было изменено.",
+      importTodoist: "Импорт из Todoist (CSV)",
+      todoistConfirm: "Будет добавлено задач: {n}, пропущено строк: {m} (разделы, заметки) и опущено дат: {d} (неподдерживаемые форматы). Продолжить?",
+      todoistDone: "Из Todoist импортировано задач: {n}.",
+      todoistInvalid: "Этот файл не является корректным CSV-экспортом Todoist."
     }
   };
 

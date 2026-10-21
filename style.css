@@ -570,6 +570,12 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 .prio-btn[data-level="1"] { color: var(--break); }
 .prio-btn[data-level="2"] { color: #c08a1e; }
 .prio-btn[data-level="3"] { color: var(--danger); }
+
+/* Tekrar döngüsü düğmesi (v3.2) */
+.repeat-btn { color: var(--muted); }
+.repeat-btn.is-active { color: var(--green); background: var(--soft); }
+.repeat-pill { color: var(--green-dark); }
+.due-pill { color: var(--break); }
 .task.prio-1 { border-inline-start: 3px solid var(--break); }
 .task.prio-2 { border-inline-start: 3px solid #c08a1e; }
 .task.prio-3 { border-inline-start: 3px solid var(--danger); }
