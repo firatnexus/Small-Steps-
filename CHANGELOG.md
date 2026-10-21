@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **README:** İngilizce sürüm artık ana README (eski Türkçe README.md → README.tr.md olarak taşındı)
+
 ## 3.2.0 — 2026-10-21
 
 Tekrarlayan görevler, Todoist'ten içe aktarma ve keşfedilebilirlik.
@@ -60,7 +64,7 @@ Doğrulama turunda (v3.0 kod incelemesi) yakalanan doğruluk ve sunum düzeltmel
 - **Gece yarısı muhasebesi:** duraklatıp devam ettirmek oturum gününü artık değiştirmiyor; yeni mod/sıfırlama yeni oturum sayılıyor. Gece yarısını geçen oturumun kredisi yalnızca geçmişe yazılıyor, bugünün sayacı şişirilmiyor (sahte saatle uçtan uca doğrulandı)
 - **Alt bilgi tutarsızlığı:** "Bugün: N görev" sayacı da artık geçmişten okunuyor — silinen tamamlanmış görev gün sayacını düşürmüyor
 - **Service worker:** kurulum hatalarını gizleyen sessiz `catch` kaldırıldı; önbellek adı sürümle eşitlendi (varlık değişikliklerinde eski önbellek sorunu notu eklendi)
-- **README:** mobil ekran görüntüsü mobil düzen düzeltmesinden önce alınmıştı — güncel kodla yeniden üretildi; belgeler Türkçe birincil hale geldi (İngilizce sürüm: README.en.md)
+- **README:** mobil ekran görüntüsü mobil düzen düzeltmesinden önce alınmıştı — güncel kodla yeniden üretildi; belgeler Türkçe birincil hale geldi (İngilizce sürüm: README.en.md — v3.2 sonrası ana README oldu, bkz. Unreleased)
 
 ### Doğrulandı
 
