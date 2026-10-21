@@ -58,9 +58,15 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 ### 📊 Progress
 
-- Weekly focus chart, streak counter, task and focus totals
+- Weekly focus chart, session / task / focus totals
 - **90-day GitHub-style heatmap** of daily focus minutes
 - Per-task focus totals
+
+### 🌲 Forest & streak
+
+- **A forest that grows with you** — every completed focus session plants a tree; trees are drawn procedurally (deterministic per day, zero assets) over the last 14 days
+- **Daily streak** — consecutive active days (a task completed or a focus session), shown as a 🔥 badge next to the forest, with your longest streak on record
+- Streaks survive the 90-day history window, and both the forest counters and your streak travel inside JSON backups
 
 ### 💾 Data
 

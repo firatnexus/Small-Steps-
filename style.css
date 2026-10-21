@@ -654,3 +654,37 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 
 /* Yardım düğmesi */
 #help-toggle { font-weight: 750; }
+
+/* ============ Orman (v3.3) ============ */
+.forest-card { margin-top: 18px; }
+.forest-sub { color: var(--muted); font-size: .85rem; margin: 0 0 12px; }
+.forest-sub strong, .forest-sub b { color: var(--green); font-weight: 700; }
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+  padding: 5px 12px; border-radius: 999px;
+  background: var(--soft); color: var(--green-dark);
+  font-size: .84rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  direction: ltr; unicode-bidi: isolate;
+}
+.forest-scene {
+  border: 1px solid var(--line); border-radius: 14px; background: var(--field);
+  padding: 14px 14px 10px; overflow-x: auto; scrollbar-width: thin;
+}
+.forest-days { display: flex; gap: 8px; min-width: max-content; padding-bottom: 2px; }
+.day-cluster { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 26px; }
+.day-cluster.empty .day-trees { opacity: .4; }
+.day-cluster.empty .day-label { opacity: .55; }
+.day-trees { display: flex; align-items: flex-end; gap: 3px; height: 52px; }
+.day-trees svg { display: block; }
+.tree-trunk { fill: color-mix(in oklab, var(--muted) 55%, #8a6d4b); }
+.tree-canopy.c1 { fill: var(--green); }
+.tree-canopy.c2 { fill: color-mix(in oklab, var(--green) 78%, var(--card)); }
+.day-cluster.empty .day-trees::after {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--muted); opacity: .35; align-self: flex-end; margin-bottom: 2px;
+}
+.more-pill { font-size: .7rem; color: var(--muted); font-weight: 650; white-space: nowrap; }
+.day-label { font-size: .66rem; color: var(--muted); font-weight: 650; text-transform: uppercase; letter-spacing: .04em; }
+.day-cluster.today .day-label { color: var(--green); }
+.forest-empty { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .92rem; }
+.forest-empty svg { flex: none; color: var(--green); }
