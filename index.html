@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#f5f7f2">
-  <meta name="description" content="Görev listesi ve Pomodoro zamanlayıcısı — 12 dilde, çevrimdışı, tek dosya.">
-  <title>Minik Adımlar — Small Steps</title>
+  <meta name="description" content="Task list and Pomodoro timer — offline-first, 12 languages, zero dependencies.">
+  <title>Small Steps — Your daily focus space</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
@@ -13,11 +13,11 @@
   <link rel="apple-touch-icon" href="icon.svg">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Minik Adımlar">
+  <meta name="apple-mobile-web-app-title" content="Small Steps">
   <meta name="mobile-web-app-capable" content="yes">
 
   <!-- Paylaşım önizlemesi (Open Graph / Twitter) -->
-  <meta property="og:title" content="Small Steps — Minik Adımlar">
+  <meta property="og:title" content="Small Steps — Your daily focus space">
   <meta property="og:description" content="Calm, offline-first task list + Pomodoro PWA. Zero dependencies, 12 languages — your data never leaves your browser.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://firatnexus.github.io/Small-Steps-/">
@@ -25,13 +25,27 @@
   <meta property="og:image:width" content="1280">
   <meta property="og:image:height" content="640">
   <meta property="og:image:alt" content="Small Steps — task list and Pomodoro timer">
-  <meta property="og:locale" content="tr_TR">
+  <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="canonical" href="https://firatnexus.github.io/Small-Steps-/">
 
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Açılış ekranı: uygulama hazır olunca solup kaldırılır -->
+  <div id="splash" aria-hidden="true">
+    <div class="splash-inner">
+      <svg class="splash-sprout" viewBox="0 0 64 64" fill="none" aria-hidden="true" focusable="false">
+        <ellipse class="splash-soil" cx="32" cy="54" rx="14" ry="3"/>
+        <rect class="splash-stem" x="30.5" y="30" width="3" height="22" rx="1.5"/>
+        <path class="splash-leaf splash-leaf-l" d="M32 36c-8-2-11-8-9-16 6 3 9 8 9 16Z"/>
+        <path class="splash-leaf splash-leaf-r" d="M32 36c8-2 11-8 9-16-6 3-9 8-9 16Z"/>
+        <circle class="splash-leaf splash-bud" cx="32" cy="27" r="4"/>
+      </svg>
+      <p class="splash-name">Small Steps</p>
+      <p class="splash-tag">Find your own pace</p>
+    </div>
+  </div>
   <main class="wrap">
     <!-- Üst bar: dil + tema + kısayollar -->
     <div class="topbar">

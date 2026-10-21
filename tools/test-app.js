@@ -1126,6 +1126,38 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
+  console.log("\n— Açılış ekranı ve PWA adı (v3.3.1) —");
+  {
+    await test("Açılış ekranı en az 0,55 sn görünür sonra kaybolur", async () => {
+      const dom = await launch();
+      // İlk anda görünür durumda
+      await new Promise(r => setTimeout(r, 150));
+      let splash = $(dom, "#splash");
+      assert(splash, "açılış ekranı DOM'da yok");
+      assert(!splash.classList.contains("splash-hide"), "çok erken soluklaştı (min süre aşıldı)");
+      // Min ~0,55 sn sonra soluklaşır
+      await new Promise(r => setTimeout(r, 700));
+      splash = $(dom, "#splash");
+      assert(splash && splash.classList.contains("splash-hide"), "soluklaştırma sınıfı gelmedi");
+      await new Promise(r => setTimeout(r, 700));
+      eq($(dom, "#splash"), null, "açılış ekranı DOM'dan kaldırılmadı");
+      dom.window.close();
+    });
+
+    await test("PWA yükleme adları İngilizce (manifest + apple başlığı)", () => {
+      const m = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+      eq(m.short_name, "Small Steps", "manifest short_name İngilizce olmalı");
+      eq(m.lang, "en", "manifest lang 'en' olmalı");
+      assert(!/[çğıöşü]/i.test(m.name + m.description + m.shortcuts.map(s => s.name).join("")),
+        "manifest metinlerinde Türkçe karakter kaldı");
+      const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
+      assert(html.includes('apple-mobile-web-app-title" content="Small Steps'),
+        "apple başlığı İngilizce değil");
+      assert(html.includes('<title>Small Steps'), "statik başlık İngilizce değil");
+      assert(html.includes('og:locale" content="en_US'), "og:locale güncellenmedi");
+    });
+  }
+
   console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız`);
   process.exit(fail ? 1 : 0);
 })().catch((err) => {
