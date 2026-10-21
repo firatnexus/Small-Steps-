@@ -1144,6 +1144,45 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       dom.window.close();
     });
 
+    await test("Soğuk açılışta belge gizli yüklenirse ekran görünür olunca başlar", async () => {
+      /* Kurulu PWA soğuk açılışı: belge Android'in yerel açılış ekranı
+         arkasında visibilityState "hidden" ile yüklenir; ekranın süresi
+         ancak görünür olunca işlemeli. */
+      const dom = new JSDOM(html, {
+        url: "https://smallsteps.test/",
+        runScripts: "outside-only",
+        pretendToBeVisual: true
+      });
+      const w = dom.window;
+      let visible = false;
+      Object.defineProperty(w.document, "visibilityState", {
+        get: () => (visible ? "visible" : "hidden"),
+        configurable: true
+      });
+      w.eval(translationsSrc);
+      w.eval(appSrc);
+      if (w.document.readyState === "loading") {
+        await new Promise((r) => w.document.addEventListener("DOMContentLoaded", r, { once: true }));
+      }
+      await new Promise(r => setTimeout(r, 1200));
+      let splash = $(dom, "#splash");
+      assert(splash && !splash.classList.contains("splash-hide"),
+        "gizli yüklenen belgede ekran erken kayboldu (süre görünmeden işlemiş)");
+      visible = true;
+      w.document.dispatchEvent(new w.Event("visibilitychange"));
+      await new Promise(r => setTimeout(r, 300));
+      splash = $(dom, "#splash");
+      assert(splash && !splash.classList.contains("splash-hide"),
+        "görünür olduktan sonra erken soluklaştı (min süre aşıldı)");
+      await new Promise(r => setTimeout(r, 700));
+      splash = $(dom, "#splash");
+      assert(splash && splash.classList.contains("splash-hide"),
+        "görünür olduktan sonra soluklaştırma sınıfı gelmedi");
+      await new Promise(r => setTimeout(r, 700));
+      eq($(dom, "#splash"), null, "ekran DOM'dan kaldırılmadı");
+      dom.window.close();
+    });
+
     await test("PWA yükleme adları İngilizce (manifest + apple başlığı)", () => {
       const m = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
       eq(m.short_name, "Small Steps", "manifest short_name İngilizce olmalı");
