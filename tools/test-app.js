@@ -101,11 +101,11 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
         stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null
       }
     });
-    test("Görevler yüklenir ve üst seviye kabul edilir", () => {
+    await test("Görevler yüklenir ve üst seviye kabul edilir", () => {
       eq($$(dom, "#task-list .task").length, 2);
       eq($$(dom, "#task-list .task.subtask").length, 0);
     });
-    test("Rozet yalnız üst görevleri sayar", () => {
+    await test("Rozet yalnız üst görevleri sayar", () => {
       eq($(dom, "#count-badge").textContent.trim(), "1 / 2");
     });
     dom.window.close();
@@ -129,19 +129,25 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     input.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Enter", cancelable: true }));
     await settled();
 
-    test("Alt görev ebeveynin altında render edilir", () => {
+    await test("Alt görev ebeveynin altında render edilir", () => {
       eq($$(dom, "#task-list .task.subtask").length, 1);
       const items = $$(dom, "#task-list .task");
-      eq(items[0].dataset.id, items[1].dataset.id === items[0].dataset.id ? items[0].dataset.id : items[0].dataset.id); // sıra korunur
+      eq(items.length, 2);
+      const st = readState(dom);
+      const parent = st.tasks.find(t => !t.parentId);
+      const kid = st.tasks.find(t => t.parentId);
+      assert(parent && kid, "ebeveyn/alt görev bulunamadı");
+      eq(kid.parentId, parent.id, "alt görevin parentId'si ebeveyne ait değil");
       assert(items[1].classList.contains("subtask"), "ikinci satır alt görev değil");
+      eq(items[0].dataset.id, parent.id, "üst görev ilk sırada değil");
     });
-    test("Kalıcı depoya parentId ile yazılır", () => {
+    await test("Kalıcı depoya parentId ile yazılır", () => {
       const st = readState(dom);
       eq(st.tasks.length, 2);
       assert(st.tasks[1].parentId === "t" ? true : typeof st.tasks[1].parentId === "string", "parentId kaydedilmedi");
       assert(st.tasks.some(t => t.parentId === st.tasks.find(x => !x.parentId).id), "parentId ebeveynle eşleşmiyor");
     });
-    test("Ebeveynde 0/1 ilerleme rozeti görünür", () => {
+    await test("Ebeveynde 0/1 ilerleme rozeti görünür", () => {
       const pill = $(dom, ".subtask-pill");
       assert(pill, "rozet yok");
       eq(pill.textContent, "0/1");
@@ -151,14 +157,14 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     const subItem = $(dom, "#task-list .task.subtask");
     subItem.querySelector('input[type="checkbox"]').click();
     await settled();
-    test("Alt görev tamamlanınca rozet 1/1 olur", () => {
+    await test("Alt görev tamamlanınca rozet 1/1 olur", () => {
       eq($(dom, ".subtask-pill").textContent, "1/1");
     });
-    test("Alt görev tamamlaması günlük istatistiğe işlenmez", () => {
+    await test("Alt görev tamamlaması günlük istatistiğe işlenmez", () => {
       const h = readHistory(dom);
       eq(h[todayKey()]?.done || 0, 0, "alt görev istatistiği arttı");
     });
-    test("Rozet yalnız üst görevleri sayar (0 / 1)", () => {
+    await test("Rozet yalnız üst görevleri sayar (0 / 1)", () => {
       eq($(dom, "#count-badge").textContent.trim(), "0 / 1");
     });
 
@@ -166,7 +172,7 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     const topItem = $(dom, "#task-list .task:not(.subtask)");
     topItem.querySelector('input[type="checkbox"]').click();
     await settled();
-    test("Üst görev tamamlaması istatistiğe işlenir", () => {
+    await test("Üst görev tamamlaması istatistiğe işlenir", () => {
       const h = readHistory(dom);
       eq(h[todayKey()]?.done || 0, 1);
     });
@@ -174,7 +180,7 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     // Ağaç silme + geri alma
     w.document.querySelector(".task:not(.subtask) .danger").click();
     await settled();
-    test("Üst görev silinince alt görevleri de gider", () => {
+    await test("Üst görev silinince alt görevleri de gider", () => {
       eq($$(dom, "#task-list .task").length, 0);
       eq(readState(dom).tasks.length, 0);
     });
@@ -184,6 +190,21 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       eq(readState(dom).tasks.length, 2);
       assert(readState(dom).tasks[1].parentId, "alt görev parentId'sini kaybetti");
       eq($$(dom, "#task-list .task").length, 2);
+    });
+
+    // REGRESYON: toast açıkken eklenen yeni görev, geri almada kaybolmamalı
+    w.document.querySelector(".task:not(.subtask) .danger").click();
+    await settled();
+    w.document.querySelector("#task-input").value = "Toast açıkken eklenen";
+    w.document.querySelector("#task-form").dispatchEvent(new w.Event("submit", { cancelable: true }));
+    await settled();
+    await test("Geri alma, araya eklenen yeni görevi korur", async () => {
+      w.document.querySelector("#toast button").click();
+      await settled();
+      const st = readState(dom);
+      eq(st.tasks.length, 3, "silinen ağaç + yeni görev bekleniyordu");
+      assert(st.tasks.some(t => t.text === "Toast açıkken eklenen"), "yeni görev geri almada kayboldu");
+      assert(st.tasks.some(t => t.parentId), "silinen alt görev geri gelmedi");
     });
     dom.window.close();
   }
@@ -203,12 +224,12 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     });
     const w = dom.window;
 
-    test("Alt görev araması ebeveyni de listeye çıkarır", () => {
+    await test("Alt görev araması ebeveyni de listeye çıkarır", () => {
       w.document.querySelector("#task-search").value = "çantasını";
       w.document.querySelector("#task-search").dispatchEvent(new w.Event("input"));
       eq($$(dom, "#task-list .task").length, 2);
     });
-    test("Eşleşmeyen arama boş durum gösterir", () => {
+    await test("Eşleşmeyen arama boş durum gösterir", () => {
       w.document.querySelector("#task-search").value = "yokboyle";
       w.document.querySelector("#task-search").dispatchEvent(new w.Event("input"));
       eq($$(dom, "#task-list .task").length, 0);
@@ -218,12 +239,12 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     w.document.querySelector('[data-filter="active"]').click();
     w.document.querySelector("#task-search").value = "";
     w.document.querySelector("#task-search").dispatchEvent(new w.Event("input"));
-    test("Aktif filtresi tamamlanmış üst görevi gizler", () => {
+    await test("Aktif filtresi tamamlanmış üst görevi gizler", () => {
       eq($$(dom, "#task-list .task").length, 0);
     });
 
     w.document.querySelector('[data-filter="done"]').click();
-    test("Tamamlanan filtresi üst görevi alt görevleriyle gösterir", () => {
+    await test("Tamamlanan filtresi üst görevi alt görevleriyle gösterir", () => {
       eq($$(dom, "#task-list .task").length, 2);
     });
     dom.window.close();
@@ -246,23 +267,23 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     const w = dom.window;
 
     w.document.querySelector("#export-csv").click();
-    test("İndirme tetiklenir ve dosya adı tarihlidir", () => {
+    await test("İndirme tetiklenir ve dosya adı tarihlidir", () => {
       assert(w.__lastDownload, "indirme yok");
       assert(/^small-steps-tasks-\d{4}-\d{2}-\d{2}\.csv$/.test(w.__lastDownload.name), "dosya adı: " + w.__lastDownload.name);
     });
     const csv = w.__lastBlob.__text;
-    test("UTF-8 BOM ile başlar ve başlık satırı tamdır", () => {
+    await test("UTF-8 BOM ile başlar ve başlık satırı tamdır", () => {
       assert(csv.charCodeAt(0) === 0xFEFF, "BOM yok");
       assert(csv.startsWith("\uFEFF\"type\",\"text\",\"done\",\"priority\",\"focus_minutes\",\"parent_text\",\"created_at\",\"completed_at\""), "başlık yanlış");
     });
-    test("Virgül ve tırnak içeren metin RFC 4180'e göre kaçırılır", () => {
+    await test("Virgül ve tırnak içeren metin RFC 4180'e göre kaçırılır", () => {
       assert(csv.includes('"Süt, ""ekmek"" al\nve çay"'), "özel karakterli metin kaçırılmadı: " + JSON.stringify(csv));
     });
-    test("Alt görev satırı parent_text ile gelir", () => {
+    await test("Alt görev satırı parent_text ile gelir", () => {
       assert(csv.includes('"İkinci satır, ""alıntı"""'), "alt görev metni yok");
       assert(csv.includes('"task"'), "tip sütunu yok");
     });
-    test("Satır sonları CRLF kullanır", () => {
+    await test("Satır sonları CRLF kullanır", () => {
       assert(csv.includes("\r\n"), "CRLF yok");
     });
     dom.window.close();
@@ -317,18 +338,76 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     const w = dom.window;
     w.document.querySelector("#clear-done").click();
     await settled();
-    test("Tamamlanan üst görev, açık alt göreviyle birlikte kalkar", () => {
+    await test("Tamamlananlar kalkar; AÇIK alt görev silinmez, üst seviyeye terfi eder", () => {
       const st = readState(dom);
-      eq(st.tasks.length, 1);
-      eq(st.tasks[0].id, "q");
-      eq($$(dom, "#task-list .task").length, 1);
+      eq(st.tasks.length, 2, "açık alt görev + açık üst kalmalı");
+      const kid = st.tasks.find(t => t.id === "k");
+      assert(kid, "açık alt görev silindi");
+      eq(kid.parentId, null, "alt görev terfi ettirilmedi");
+      eq(st.tasks.some(t => t.id === "p"), false, "tamamlanan üst görev kalkmadı");
+      eq($$(dom, "#task-list .task").length, 2);
+      eq($$(dom, "#task-list .task.subtask").length, 0, "terfi eden görev hâlâ alt görev görünüyor");
     });
-    await test("Geri alma hepsini geri getirir", async () => {
+    await test("Toast sayısı fiilen kaldırılan kayıt sayısını verir", () => {
+      eq($(dom, "#toast").textContent.includes("1"), true, "toast sayısı yanlış");
+    });
+    await test("Geri alma hiyerarşiyi aynen geri getirir", async () => {
       w.document.querySelector("#toast button").click();
       await settled();
-      eq(readState(dom).tasks.length, 3);
+      const st = readState(dom);
+      eq(st.tasks.length, 3);
+      eq(st.tasks.find(t => t.id === "k").parentId, "p", "alt görevin parentId'si geri gelmedi");
     });
     dom.window.close();
+  }
+
+  console.log("\n— JSON dosya yoluyla içe aktarma (gerçek FileReader akışı) —");
+  {
+    const dom = await launch({
+      state: {
+        tasks: [
+          { id: "p", text: "Ana iş", done: false, createdAt: 1, doneAt: null, priority: 2, focus: 30 },
+          { id: "k", text: "Alt adım", done: true, createdAt: 1, doneAt: 5, priority: 0, focus: 0, parentId: "p" }
+        ],
+        settings: { focus: 50, short: 10, long: 20, longEvery: 3, autoStart: true, sound: false },
+        stats: { date: todayKey(), focusMinutes: 7 }, filter: "active", search: "x", activeTaskId: "p"
+      },
+      history: { [todayKey()]: { focus: 42, done: 3 } }
+    });
+    const w = dom.window;
+
+    // Dışa aktar: JSON blob'unu yakala
+    w.document.querySelector("#export-data").click();
+    const backupJson = w.__lastBlob.__text;
+    assert(backupJson && backupJson.includes("Ana iş"), "JSON dışa aktarma boş");
+
+    // Yeni bir örnek: dosya yoluyla geri yükle (FileReader + confirm)
+    const dom2 = await launch();
+    const w2 = dom2.window;
+    w2.confirm = () => true; // onay kutusunu otomatik kabul et
+    const file = new w2.File([backupJson], "yedek.json", { type: "application/json" });
+    Object.defineProperty(w2.document.querySelector("#import-file"), "files", { value: [file] });
+    w2.document.querySelector("#import-file").dispatchEvent(new w2.Event("change"));
+    await settled(400); // FileReader + içe aktarma akışı
+
+    await test("Dosyadan geri yükleme görevleri, hiyerarşiyi ve ayarları getirir", () => {
+      const st = readState(dom2);
+      eq(st.tasks.length, 2, "görevler geri gelmedi");
+      const kid = st.tasks.find(t => t.text === "Alt adım");
+      assert(kid && kid.parentId === "p", "hiyerarşi kayboldu");
+      assert(kid.done === true, "tamamlanma durumu kayboldu");
+      eq(st.settings.focus, 50, "ayarlar geri gelmedi");
+      assert(st.settings.autoStart === true, "autoStart kayboldu");
+      eq(st.activeTaskId, "p", "odak görevi kayboldu");
+      eq($$(dom2, "#task-list .task.subtask").length, 1, "alt görev render olmadı");
+    });
+    await test("Geçmiş de dosyayla geri gelir", () => {
+      const h = readHistory(dom2);
+      eq(h[todayKey()]?.focus, 42, "odak geçmişi kayboldu");
+      eq(h[todayKey()]?.done, 3, "görev geçmişi kayboldu");
+    });
+    dom.window.close();
+    dom2.window.close();
   }
 
   console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız`);

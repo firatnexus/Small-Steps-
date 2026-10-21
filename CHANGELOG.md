@@ -7,7 +7,7 @@ Alt görevler ve CSV dışa aktarma: büyük işleri gerçekten küçük adımla
 ### Eklendi
 
 - **Alt görevler (tek seviye)** — herhangi bir görevin ＋ düğmesiyle alt görev ekle (Enter ile satır içi, Esc iptal). Ebeveyn satırında ilerleme rozeti (ör. 2/5) görünür
-- **Ağaç silme ve geri alma** — üst görev silinince alt görevleri de gider; toast'taki geri alma tüm ağacı eski sırasıyla geri getirir
+- **Ağaç silme ve geri alma** — üst görev silinince alt görevleri de gider; toast'taki geri alma yalnızca silinen kayıtları eski konumlarına geri koyar (toast açıkken eklenen yeni görevler korunur)
 - **CSV dışa aktarma** — Ayarlar → Verilerin → Görevleri indir (CSV): tip, metin, durum, öncelik, odak dakikası, ebeveyn metni ve tarihler; UTF-8 BOM + RFC 4180 kaçış (Excel uyumlu)
 - **Otomatik uygulama testleri** — `tools/test-app.js` gerçek app.js'yi jsdom'da çalıştırıyor: eski veri uyumluluğu, alt görev akışları, ağaç silme/geri alma, gruplu arama/filtre, CSV kaçış kuralları, bozuk veri temizleme, tamamlananları temizleme. CI'a eklendi
 
@@ -16,7 +16,7 @@ Alt görevler ve CSV dışa aktarma: büyük işleri gerçekten küçük adımla
 - Durum ve arama filtreleri üst seviye görevlere uygulanır; alt görevler bağlam olarak ebeveynin altında görünür. Aramada alt görev eşleşmesi ebeveyni de listeye çıkarır
 - Sayaç ve günlük istatistik yalnızca üst seviye görevleri sayar; alt görev ilerlemesi ebeveyndeki rozettedir
 - Bir üst görevi tamamlamak alt görevleri otomatik tamamlamaz (ve tersi) — tamamlama her zaman açık seçimdir
-- Tamamlananları temizle, tamamlanan üst görevlerin açık alt görevlerini de kaldırır (yetim kayıt kalmasın diye)
+- **Tamamlananları temizle**, tamamlanan üst görevin AÇIK alt görevlerini silmez — onları üst seviyeye terfi ettirir; geri alma hiyerarşiyi aynen geri getirir
 
 ### İçe aktarma sağlamlaştırma
 

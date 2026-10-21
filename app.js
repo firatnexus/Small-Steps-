@@ -544,16 +544,36 @@
   }
 
   /* Silme: üst seviye bir görev, alt görevleriyle birlikte silinir.
-     Geri alma, listenin tamamının anlık görüntüsünü geri yükler — böylece
-     sıra ve alt görevler aynen yerine gelir. */
+     Geri alma yalnızca silinen kayıtları geri koyar — silme toast'ı
+     açıkken eklenen yeni görevler korunur. Her kayıt, özgün sırasında
+     kendisinden sonra gelen ve hâlâ listede olan ilk komşusunun önüne
+     yerleşir; komşu kalmadıysa listenin sonuna eklenir. */
+  function restoreTasks(removed, snapshot) {
+    for (const task of removed) {
+      if (state.tasks.includes(task)) continue;
+      const originalIdx = snapshot.indexOf(task);
+      let inserted = false;
+      for (let i = originalIdx + 1; i < snapshot.length; i++) {
+        const nextIdx = state.tasks.indexOf(snapshot[i]);
+        if (nextIdx !== -1) {
+          state.tasks.splice(nextIdx, 0, task);
+          inserted = true;
+          break;
+        }
+      }
+      if (!inserted) state.tasks.push(task);
+    }
+  }
+
   function removeTask(task) {
     const index = state.tasks.indexOf(task);
     if (index === -1) return;
 
     const snapshot = state.tasks.slice();
     const kids = task.parentId ? [] : childrenOf(task.id);
+    const removed = [task, ...kids];
 
-    state.tasks = state.tasks.filter(t => t !== task && !kids.includes(t));
+    state.tasks = state.tasks.filter(t => !removed.includes(t));
     save(); renderTasks();
     if (state.activeTaskId &&
         (state.activeTaskId === task.id || kids.some(k => k.id === state.activeTaskId))) {
@@ -562,7 +582,7 @@
 
     const message = kids.length ? t("toastDeletedTree", { n: kids.length }) : t("toastDeleted");
     showToast(message, t("toastUndo"), () => {
-      state.tasks = snapshot;
+      restoreTasks(removed, snapshot);
       save(); renderTasks(); renderFocusTask();
     });
   }
@@ -1122,17 +1142,32 @@
     });
 
     els.clearDone.addEventListener("click", () => {
-      // Tamamlananlar temizlenirken tamamlanan üst görevlerin alt görevleri de
-      // (yetim kalmasınlar diye) kaldırılır; geri alma hepsini geri getirir.
+      /* Tamamlanan görevler kalkar. Tamamlanmış bir üst görevin AÇIK alt
+         görevleri silinmez — üst seviyeye terfi eder (yetim kalmamaları için).
+         Toast sayısı, fiilen kaldırılan (tamamlanmış) kayıt sayısını verir. */
+      const doneTasks = state.tasks.filter(t => t.done);
+      if (!doneTasks.length) return;
+
       const snapshot = state.tasks.slice();
-      const removedIds = new Set(state.tasks.filter(t => t.done).map(t => t.id));
-      const n = removedIds.size;
-      if (!n) return;
-      state.tasks = state.tasks.filter(t =>
-        !removedIds.has(t.id) && !(t.parentId && removedIds.has(t.parentId)));
+      const doneIds = new Set(doneTasks.map(t => t.id));
+      const removed = doneTasks.slice();
+      // Terfi, görev nesnelerini yerinde değiştirdiği için özgün ebeveynler
+      // mutasyondan ÖNCE ayrıca kaydedilmeli (anlık görüntü referans paylaşır).
+      const origParents = new Map(state.tasks.map(t => [t.id, t.parentId]));
+
+      state.tasks = state.tasks.filter(t => !doneIds.has(t.id));
+      for (const task of state.tasks) {
+        if (task.parentId && doneIds.has(task.parentId)) task.parentId = null;
+      }
       save(); renderTasks();
-      showToast(t("toastCleared", { n }), t("toastUndo"), () => {
-        state.tasks = snapshot;
+      showToast(t("toastCleared", { n: removed.length }), t("toastUndo"), () => {
+        restoreTasks(removed, snapshot);
+        // Terfi edilen alt görevlerin parentId'sini de geri getir
+        for (const task of state.tasks) {
+          if (!task.parentId && origParents.get(task.id)) {
+            task.parentId = origParents.get(task.id);
+          }
+        }
         save(); renderTasks(); renderFocusTask();
       });
     });
