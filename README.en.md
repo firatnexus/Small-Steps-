@@ -7,7 +7,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.0.1-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.1.0-267354?style=flat-square)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-installation)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-languages)
@@ -42,6 +42,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 ### 📝 Tasks
 
+- **Subtasks** — break a big task into smaller steps with ＋; the parent row shows a progress badge (e.g. 2/5)
 - **Task-linked focus** — pick a task (◎) and every completed Pomodoro credits its minutes to that task
 - **Priorities** — none / low / medium / high, with a colored accent
 - **Search** — instant, diacritic-friendly (type "ikinci", find "İkinci")
@@ -189,7 +190,7 @@ Example task record:
 }
 ```
 
-Use **Settings → Your data → Export backup** for a full JSON backup you can move between browsers or devices.
+Use **Settings → Your data → Export backup** for a full JSON backup you can move between browsers or devices. **Download tasks (CSV)** exports just the task list — use JSON for a full backup.
 
 ---
 
@@ -197,6 +198,7 @@ Use **Settings → Your data → Export backup** for a full JSON backup you can 
 
 ```bash
 node tools/check-translations.js   # i18n key/placeholder parity (runs in CI)
+npm ci && node tools/test-app.js   # app logic tests — real app.js on jsdom
 ```
 
 Then open `test.html` in a browser for the full in-page suite (language switching, RTL, key parity, placeholder integrity).

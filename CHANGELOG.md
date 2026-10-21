@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.1.0 — 2026-10-21
+
+Alt görevler ve CSV dışa aktarma: büyük işleri gerçekten küçük adımlara bölme.
+
+### Eklendi
+
+- **Alt görevler (tek seviye)** — herhangi bir görevin ＋ düğmesiyle alt görev ekle (Enter ile satır içi, Esc iptal). Ebeveyn satırında ilerleme rozeti (ör. 2/5) görünür
+- **Ağaç silme ve geri alma** — üst görev silinince alt görevleri de gider; toast'taki geri alma tüm ağacı eski sırasıyla geri getirir
+- **CSV dışa aktarma** — Ayarlar → Verilerin → Görevleri indir (CSV): tip, metin, durum, öncelik, odak dakikası, ebeveyn metni ve tarihler; UTF-8 BOM + RFC 4180 kaçış (Excel uyumlu)
+- **Otomatik uygulama testleri** — `tools/test-app.js` gerçek app.js'yi jsdom'da çalıştırıyor: eski veri uyumluluğu, alt görev akışları, ağaç silme/geri alma, gruplu arama/filtre, CSV kaçış kuralları, bozuk veri temizleme, tamamlananları temizleme. CI'a eklendi
+
+### Davranış kuralları (belgelendi)
+
+- Durum ve arama filtreleri üst seviye görevlere uygulanır; alt görevler bağlam olarak ebeveynin altında görünür. Aramada alt görev eşleşmesi ebeveyni de listeye çıkarır
+- Sayaç ve günlük istatistik yalnızca üst seviye görevleri sayar; alt görev ilerlemesi ebeveyndeki rozettedir
+- Bir üst görevi tamamlamak alt görevleri otomatik tamamlamaz (ve tersi) — tamamlama her zaman açık seçimdir
+- Tamamlananları temizle, tamamlanan üst görevlerin açık alt görevlerini de kaldırır (yetim kayıt kalmasın diye)
+
+### İçe aktarma sağlamlaştırma
+
+- Bozuk yedekler artık otomatik düzeltliyor: yinelenen id'ler atılır, yetim/kendini işaret eden/iki seviye derin `parentId` kayıtları temizlenir; odak görevi listede yoksa sıfırlanır
+
 ## 3.0.1 — 2026-10-20
 
 Doğrulama turunda (v3.0 kod incelemesi) yakalanan doğruluk ve sunum düzeltmeleri:

@@ -7,7 +7,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.0.1-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.1.0-267354?style=flat-square)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-kurulumu)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-diller)
@@ -42,6 +42,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 ### 📝 Görevler
 
+- **Alt görevler** — ＋ ile büyük bir görevi küçük adımlara böl; ebeveyn satırında ilerleme rozeti (ör. 2/5)
 - **Göreve bağlı odak** — ◎ düğmesiyle görev seç; tamamlanan her pomodoro, dakikaları o göreve işleniyor
 - **Öncelikler** — yok / düşük / orta / yüksek, renkli şeritle
 - **Arama** — anlık, aksan dostu ("ikinci" yaz, "İkinci"yi bulur)
@@ -63,6 +64,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 ### 💾 Veri
 
 - **JSON dışa/içe aktarma** — görevler, ayarlar, geçmiş, tema ve dil dahil tam yedek
+- **CSV dışa aktarma** — görevleri tablo uygulamalarında aç (UTF-8 BOM + RFC 4180 uyumlu)
 - Her şey `localStorage`'da kalır — hesap yok, sunucu yok, izleme yok
 
 ### 🎨 Arayüz
@@ -189,7 +191,7 @@ const DEFAULT_SETTINGS = {
 }
 ```
 
-**Ayarlar → Verilerin → Yedek al** ile tarayıcılar ve cihazlar arasında taşıyabileceğin tam JSON yedeği oluştur.
+**Ayarlar → Verilerin → Yedek al** ile tarayıcılar ve cihazlar arasında taşıyabileceğin tam JSON yedeği oluştur. **Görevleri indir (CSV)** yalnızca görev listesini verir; tam yedek için JSON kullan.
 
 ---
 
@@ -197,6 +199,7 @@ const DEFAULT_SETTINGS = {
 
 ```bash
 node tools/check-translations.js   # i18n anahtar/yer tutucu paritesi (CI'da da çalışır)
+npm ci && node tools/test-app.js  # uygulama mantığı testleri — gerçek app.js, jsdom üzerinde
 ```
 
 Ardından tam paket için (dil değiştirme, RTL, anahtar paritesi, yer tutucu bütünlüğü) tarayıcıda `test.html` dosyasını aç.

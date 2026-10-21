@@ -70,7 +70,12 @@
       dataHeading: "Your data", exportData: "Export backup", importData: "Import backup",
       importDone: "Backup restored.", importInvalid: "This file is not a valid backup.", importConfirm: "Importing a backup replaces your current tasks, settings and history. Continue?",
       shortcutsTitle: "Keyboard shortcuts", scStartPause: "Start / pause the timer", scNew: "New task",
-      scHelp: "Show this help", scEdit: "Edit a task (double-click it)", scClose: "Close"
+      scHelp: "Show this help", scEdit: "Edit a task (double-click it)", scClose: "Close",
+      /* --- v3.1: alt görevler, CSV --- */
+      subtaskAdd: "Add subtask", subtaskPlaceholder: "A smaller step…", subtaskAria: "New subtask",
+      subtaskProgress: "Subtask progress",
+      exportCsv: "Download tasks (CSV)", csvNote: "CSV contains only your tasks. For a full backup use the JSON export.",
+      toastDeletedTree: "Task deleted with {n} subtask(s)."
     },
     tr: {
       name: "Türkçe", langLabel: "Dil", themeToggle: "Temayı değiştir",
@@ -130,7 +135,12 @@
       dataHeading: "Verilerin", exportData: "Yedek al", importData: "Yedeği yükle",
       importDone: "Yedek geri yüklendi.", importInvalid: "Bu dosya geçerli bir yedek değil.", importConfirm: "Yedek yüklemek mevcut görevlerini, ayarlarını ve geçmişini değiştirir. Devam edilsin mi?",
       shortcutsTitle: "Klavye kısayolları", scStartPause: "Zamanlayıcıyı başlat / duraklat", scNew: "Yeni görev",
-      scHelp: "Bu yardımı göster", scEdit: "Görevi düzenle (çift tıkla)", scClose: "Kapat"
+      scHelp: "Bu yardımı göster", scEdit: "Görevi düzenle (çift tıkla)", scClose: "Kapat",
+      /* --- v3.1: alt görevler, CSV --- */
+      subtaskAdd: "Alt görev ekle", subtaskPlaceholder: "Daha küçük bir adım…", subtaskAria: "Yeni alt görev",
+      subtaskProgress: "Alt görev ilerlemesi",
+      exportCsv: "Görevleri indir (CSV)", csvNote: "CSV yalnızca görevleri içerir. Tam yedek için JSON dışa aktarmayı kullan.",
+      toastDeletedTree: "Görev, {n} alt göreviyle birlikte silindi."
     },
     es: {
       name: "Español", langLabel: "Idioma", themeToggle: "Cambiar tema",
@@ -190,7 +200,12 @@
       dataHeading: "Tus datos", exportData: "Exportar copia", importData: "Importar copia",
       importDone: "Copia restaurada.", importInvalid: "Este archivo no es una copia válida.", importConfirm: "Importar una copia reemplaza tus tareas, ajustes e historial actuales. ¿Continuar?",
       shortcutsTitle: "Atajos de teclado", scStartPause: "Iniciar / pausar el temporizador", scNew: "Nueva tarea",
-      scHelp: "Mostrar esta ayuda", scEdit: "Editar una tarea (doble clic)", scClose: "Cerrar"
+      scHelp: "Mostrar esta ayuda", scEdit: "Editar una tarea (doble clic)", scClose: "Cerrar",
+      /* --- v3.1: subtareas, CSV --- */
+      subtaskAdd: "Añadir subtarea", subtaskPlaceholder: "Un paso más pequeño…", subtaskAria: "Nueva subtarea",
+      subtaskProgress: "Progreso de las subtareas",
+      exportCsv: "Descargar tareas (CSV)", csvNote: "El CSV solo contiene tus tareas. Para una copia completa usa la exportación JSON.",
+      toastDeletedTree: "Tarea eliminada con {n} subtarea(s)."
     },
     fr: {
       name: "Français", langLabel: "Langue", themeToggle: "Changer de thème",
@@ -250,7 +265,12 @@
       dataHeading: "Vos données", exportData: "Exporter une sauvegarde", importData: "Importer une sauvegarde",
       importDone: "Sauvegarde restaurée.", importInvalid: "Ce fichier n'est pas une sauvegarde valide.", importConfirm: "Importer une sauvegarde remplace vos tâches, réglages et historique actuels. Continuer ?",
       shortcutsTitle: "Raccourcis clavier", scStartPause: "Démarrer / mettre en pause le minuteur", scNew: "Nouvelle tâche",
-      scHelp: "Afficher cette aide", scEdit: "Modifier une tâche (double-clic)", scClose: "Fermer"
+      scHelp: "Afficher cette aide", scEdit: "Modifier une tâche (double-clic)", scClose: "Fermer",
+      /* --- v3.1 : sous-tâches, CSV --- */
+      subtaskAdd: "Ajouter une sous-tâche", subtaskPlaceholder: "Une étape plus petite…", subtaskAria: "Nouvelle sous-tâche",
+      subtaskProgress: "Avancement des sous-tâches",
+      exportCsv: "Télécharger les tâches (CSV)", csvNote: "Le CSV ne contient que vos tâches. Pour une sauvegarde complète, utilisez l'export JSON.",
+      toastDeletedTree: "Tâche supprimée avec {n} sous-tâche(s)."
     },
     de: {
       name: "Deutsch", langLabel: "Sprache", themeToggle: "Design wechseln",
@@ -310,7 +330,12 @@
       dataHeading: "Deine Daten", exportData: "Backup exportieren", importData: "Backup importieren",
       importDone: "Backup wiederhergestellt.", importInvalid: "Diese Datei ist kein gültiges Backup.", importConfirm: "Der Import ersetzt deine aktuellen Aufgaben, Einstellungen und deinen Verlauf. Fortfahren?",
       shortcutsTitle: "Tastenkürzel", scStartPause: "Timer starten / pausieren", scNew: "Neue Aufgabe",
-      scHelp: "Diese Hilfe anzeigen", scEdit: "Aufgabe bearbeiten (Doppelklick)", scClose: "Schließen"
+      scHelp: "Diese Hilfe anzeigen", scEdit: "Aufgabe bearbeiten (Doppelklick)", scClose: "Schließen",
+      /* --- v3.1: Unteraufgaben, CSV --- */
+      subtaskAdd: "Unteraufgabe hinzufügen", subtaskPlaceholder: "Ein kleinerer Schritt…", subtaskAria: "Neue Unteraufgabe",
+      subtaskProgress: "Fortschritt der Unteraufgaben",
+      exportCsv: "Aufgaben herunterladen (CSV)", csvNote: "Die CSV enthält nur deine Aufgaben. Für ein vollständiges Backup nutze den JSON-Export.",
+      toastDeletedTree: "Aufgabe mit {n} Unteraufgabe(n) gelöscht."
     },
     pt: {
       name: "Português", langLabel: "Idioma", themeToggle: "Alternar tema",
@@ -370,7 +395,12 @@
       dataHeading: "Seus dados", exportData: "Exportar backup", importData: "Importar backup",
       importDone: "Backup restaurado.", importInvalid: "Este arquivo não é um backup válido.", importConfirm: "Importar um backup substitui suas tarefas, configurações e histórico atuais. Continuar?",
       shortcutsTitle: "Atalhos de teclado", scStartPause: "Iniciar / pausar o temporizador", scNew: "Nova tarefa",
-      scHelp: "Mostrar esta ajuda", scEdit: "Editar uma tarefa (clique duplo)", scClose: "Fechar"
+      scHelp: "Mostrar esta ajuda", scEdit: "Editar uma tarefa (clique duplo)", scClose: "Fechar",
+      /* --- v3.1: subtarefas, CSV --- */
+      subtaskAdd: "Adicionar subtarefa", subtaskPlaceholder: "Um passo menor…", subtaskAria: "Nova subtarefa",
+      subtaskProgress: "Progresso das subtarefas",
+      exportCsv: "Baixar tarefas (CSV)", csvNote: "O CSV contém apenas as suas tarefas. Para uma cópia completa, use a exportação JSON.",
+      toastDeletedTree: "Tarefa eliminada com {n} subtarefa(s)."
     },
     it: {
       name: "Italiano", langLabel: "Lingua", themeToggle: "Cambia tema",
@@ -430,7 +460,12 @@
       dataHeading: "I tuoi dati", exportData: "Esporta backup", importData: "Importa backup",
       importDone: "Backup ripristinato.", importInvalid: "Questo file non è un backup valido.", importConfirm: "L'importazione sostituisce le tue attività, impostazioni e cronologia attuali. Continuare?",
       shortcutsTitle: "Scorciatoie da tastiera", scStartPause: "Avvia / metti in pausa il timer", scNew: "Nuova attività",
-      scHelp: "Mostra questo aiuto", scEdit: "Modifica un'attività (doppio clic)", scClose: "Chiudi"
+      scHelp: "Mostra questo aiuto", scEdit: "Modifica un'attività (doppio clic)", scClose: "Chiudi",
+      /* --- v3.1: sotto-attività, CSV --- */
+      subtaskAdd: "Aggiungi sotto-attività", subtaskPlaceholder: "Un passo più piccolo…", subtaskAria: "Nuova sotto-attività",
+      subtaskProgress: "Avanzamento delle sotto-attività",
+      exportCsv: "Scarica le attività (CSV)", csvNote: "Il CSV contiene solo le tue attività. Per un backup completo usa l'esportazione JSON.",
+      toastDeletedTree: "Attività eliminata con {n} sotto-attività."
     },
     hi: {
       name: "हिन्दी", langLabel: "भाषा", themeToggle: "थीम बदलें",
@@ -490,7 +525,12 @@
       dataHeading: "आपका डेटा", exportData: "बैकअप निर्यात करें", importData: "बैकअप आयात करें",
       importDone: "बैकअप पुनर्स्थापित हो गया।", importInvalid: "यह फ़ाइल वैध बैकअप नहीं है।", importConfirm: "बैकअप आयात करने से आपके वर्तमान कार्य, सेटिंग्स और इतिहास बदल जाएँगे। जारी रखें?",
       shortcutsTitle: "कीबोर्ड शॉर्टकट", scStartPause: "टाइमर शुरू / रोकें", scNew: "नया कार्य",
-      scHelp: "यह सहायता दिखाएँ", scEdit: "कार्य संपादित करें (डबल-क्लिक)", scClose: "बंद करें"
+      scHelp: "यह सहायता दिखाएँ", scEdit: "कार्य संपादित करें (डबल-क्लिक)", scClose: "बंद करें",
+      /* --- v3.1: उप-कार्य, CSV --- */
+      subtaskAdd: "उप-कार्य जोड़ें", subtaskPlaceholder: "एक और छोटा कदम…", subtaskAria: "नया उप-कार्य",
+      subtaskProgress: "उप-कार्यों की प्रगति",
+      exportCsv: "कार्य डाउनलोड करें (CSV)", csvNote: "CSV में केवल आपके कार्य होते हैं। पूर्ण बैकअप के लिए JSON निर्यात का उपयोग करें।",
+      toastDeletedTree: "कार्य, {n} उप-कार्यों सहित हटाया गया।"
     },
     ar: {
       name: "العربية", langLabel: "اللغة", themeToggle: "تبديل المظهر",
@@ -550,7 +590,12 @@
       dataHeading: "بياناتك", exportData: "تصدير نسخة احتياطية", importData: "استيراد نسخة احتياطية",
       importDone: "تمت استعادة النسخة الاحتياطية.", importInvalid: "هذا الملف ليس نسخة احتياطية صالحة.", importConfirm: "استيراد النسخة الاحتياطية سيستبدل مهامك وإعداداتك وسجلّك الحالي. هل تريد المتابعة؟",
       shortcutsTitle: "اختصارات لوحة المفاتيح", scStartPause: "بدء / إيقاف المؤقت مؤقتًا", scNew: "مهمة جديدة",
-      scHelp: "إظهار هذه المساعدة", scEdit: "تحرير مهمة (نقر مزدوج)", scClose: "إغلاق"
+      scHelp: "إظهار هذه المساعدة", scEdit: "تحرير مهمة (نقر مزدوج)", scClose: "إغلاق",
+      /* --- v3.1: مهام فرعية, CSV --- */
+      subtaskAdd: "إضافة مهمة فرعية", subtaskPlaceholder: "خطوة أصغر…", subtaskAria: "مهمة فرعية جديدة",
+      subtaskProgress: "تقدم المهام الفرعية",
+      exportCsv: "تنزيل المهام (CSV)", csvNote: "ملف CSV يحتوي على مهامك فقط. للحصول على نسخة كاملة استخدم تصدير JSON.",
+      toastDeletedTree: "تم حذف المهمة مع {n} مهمة فرعية."
     },
     zh: {
       name: "中文", langLabel: "语言", themeToggle: "切换主题",
@@ -610,7 +655,12 @@
       dataHeading: "你的数据", exportData: "导出备份", importData: "导入备份",
       importDone: "备份已恢复。", importInvalid: "该文件不是有效的备份。", importConfirm: "导入备份将替换你当前的任务、设置和历史记录。继续吗？",
       shortcutsTitle: "键盘快捷键", scStartPause: "开始 / 暂停计时器", scNew: "新任务",
-      scHelp: "显示此帮助", scEdit: "编辑任务（双击）", scClose: "关闭"
+      scHelp: "显示此帮助", scEdit: "编辑任务（双击）", scClose: "关闭",
+      /* --- v3.1: 子任务, CSV --- */
+      subtaskAdd: "添加子任务", subtaskPlaceholder: "更小的一步…", subtaskAria: "新子任务",
+      subtaskProgress: "子任务进度",
+      exportCsv: "下载任务 (CSV)", csvNote: "CSV 仅包含你的任务。完整备份请使用 JSON 导出。",
+      toastDeletedTree: "任务已连同 {n} 个子任务删除。"
     },
     ja: {
       name: "日本語", langLabel: "言語", themeToggle: "テーマを切り替え",
@@ -670,7 +720,12 @@
       dataHeading: "データ", exportData: "バックアップを書き出す", importData: "バックアップを読み込む",
       importDone: "バックアップを復元しました。", importInvalid: "有効なバックアップファイルではありません。", importConfirm: "バックアップの読み込みにより、現在のタスク・設定・履歴が置き換えられます。続けますか？",
       shortcutsTitle: "キーボードショートカット", scStartPause: "タイマーの開始 / 一時停止", scNew: "新しいタスク",
-      scHelp: "このヘルプを表示", scEdit: "タスクを編集（ダブルクリック）", scClose: "閉じる"
+      scHelp: "このヘルプを表示", scEdit: "タスクを編集（ダブルクリック）", scClose: "閉じる",
+      /* --- v3.1: サブタスク, CSV --- */
+      subtaskAdd: "サブタスクを追加", subtaskPlaceholder: "もっと小さい一歩…", subtaskAria: "新しいサブタスク",
+      subtaskProgress: "サブタスクの進捗",
+      exportCsv: "タスクをダウンロード (CSV)", csvNote: "CSVにはタスクのみが含まれます。完全なバックアップにはJSON書き出しをご利用ください。",
+      toastDeletedTree: "タスクをサブタスク{n}件と一緒に削除しました。"
     },
     ru: {
       name: "Русский", langLabel: "Язык", themeToggle: "Сменить тему",
@@ -730,7 +785,12 @@
       dataHeading: "Ваши данные", exportData: "Экспортировать резервную копию", importData: "Импортировать резервную копию",
       importDone: "Резервная копия восстановлена.", importInvalid: "Этот файл не является корректной резервной копией.", importConfirm: "Импорт резервной копии заменит ваши текущие задачи, настройки и историю. Продолжить?",
       shortcutsTitle: "Горячие клавиши", scStartPause: "Запустить / приостановить таймер", scNew: "Новая задача",
-      scHelp: "Показать эту справку", scEdit: "Изменить задачу (двойной клик)", scClose: "Закрыть"
+      scHelp: "Показать эту справку", scEdit: "Изменить задачу (двойной клик)", scClose: "Закрыть",
+      /* --- v3.1: подзадачи, CSV --- */
+      subtaskAdd: "Добавить подзадачу", subtaskPlaceholder: "Шаг поменьше…", subtaskAria: "Новая подзадача",
+      subtaskProgress: "Прогресс подзадач",
+      exportCsv: "Скачать задачи (CSV)", csvNote: "CSV содержит только ваши задачи. Для полной резервной копии используйте экспорт JSON.",
+      toastDeletedTree: "Задача удалена вместе с {n} подзадачей(ами)."
     }
   };
 
