@@ -1,6 +1,6 @@
 {
   "name": "small-steps",
-  "version": "3.3.1",
+  "version": "3.3.2",
   "description": "Görev listesi + Pomodoro PWA — test bağımlılıkları (uygulamanın kendisi sıfır bağımlılıklıdır)",
   "directories": {
     "doc": "docs"
