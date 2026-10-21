@@ -1050,8 +1050,12 @@
     });
 
     // Mobilde bugünün ağaçları görünsün: taşma varsa bugüne kaydır
-    const todayCluster = els.forestDays.querySelector(".day-cluster.today");
-    if (todayCluster && els.forestScene.scrollWidth > els.forestScene.clientWidth) {
+    scrollForestToToday();
+  }
+
+  function scrollForestToToday() {
+    const todayCluster = els.forestDays?.querySelector(".day-cluster.today");
+    if (todayCluster && els.forestScene && els.forestScene.scrollWidth > els.forestScene.clientWidth) {
       todayCluster.scrollIntoView({ block: "nearest", inline: "nearest" });
     }
   }
@@ -1537,6 +1541,16 @@
     if (!("Notification" in window) || Notification.permission !== "granted") return;
     if (document.visibilityState === "visible") return;
     try { new Notification(title, { body }); } catch {}
+  }
+
+  /* Pencere boyu değişince (mobil döndürme, masaüstü küçültme) orman
+     yeniden konumlanır: bugünün ağaçları görünümda kalsın */
+  {
+    let forestResizeT;
+    window.addEventListener("resize", () => {
+      clearTimeout(forestResizeT);
+      forestResizeT = setTimeout(scrollForestToToday, 150);
+    });
   }
 
   /* ---------- Olaylar ---------- */
