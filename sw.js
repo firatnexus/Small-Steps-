@@ -1,10 +1,13 @@
 /* ============================================================
    Minik Adımlar · sw.js
-   Cache-first (varlıklar) + network-first (HTML) service worker.
+   Cache-first service worker: HTML ve varlıklar aynı sürüm önbelleğinden
+   sunulur (atomik sürüm). Güncelleme akışı: yeni sw.js bulununca yeni
+   önbellek kurulur → skipWaiting + claim → sayfa controllerchange ile
+   kendini bir kez tazeler → yeni sürüm. Kullanıcı müdahalesi gerekmez.
    ============================================================ */
 /* Sürüm notu: app.js / style.css / translations.js değişirse bu adımı
    güncelle — aksi halde eski önbellek yeni kullanıcılara ulaşmaz. */
-const CACHE = "minik-adimlar-v3.3.2";
+const CACHE = "minik-adimlar-v3.3.3";
 
 const ASSETS = [
   "./",
@@ -40,23 +43,12 @@ self.addEventListener("fetch", (event) => {
   if (req.method !== "GET") return;
   if (new URL(req.url).origin !== self.location.origin) return;
 
-  // HTML istekleri: önce ağ — böylece güncellemeler hemen ulaşır,
-  // çevrimdışında önbellekteki kopya gösterilir.
-  if (req.mode === "navigate" || req.destination === "document") {
-    event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((c) => c || caches.match("./index.html")))
-    );
-    return;
-  }
-
+  // HTML dahil tüm istekler cache-first: sayfa her zaman TEK bir sürümün
+  // bütününü görür — "yeni HTML + eski app.js" karışımı yaşanmaz.
+  // Eşleşme YALNIZ bu sürümün adlandırılmış önbelleğinde yapılır;
+  // çevrimdışı da aynı şekilde çalışır.
   event.respondWith(
-    caches.match(req).then((cached) => {
+    caches.open(CACHE).then((c) => c.match(req)).then((cached) => {
       if (cached) return cached;
 
       return fetch(req)
@@ -66,7 +58,7 @@ self.addEventListener("fetch", (event) => {
           caches.open(CACHE).then((c) => c.put(req, copy));
           return res;
         })
-        .catch(() => caches.match("./index.html"));
+        .catch(() => caches.open(CACHE).then((c) => c.match("./index.html")));
     })
   );
 });

@@ -1,10 +1,26 @@
 # Changelog
 
+## 3.3.3 — 2026-10-21
+
+Seamless updates — no more deleting and reinstalling the PWA after a release.
+
+### Fixed
+
+- **Updates now arrive without reinstalling:** when a new version's service worker activates, the open page refreshes itself once (`controllerchange`) — the user sees the new version without closing/reopening anything
+- **Safe refresh:** the automatic refresh waits for a safe moment — it is deferred while a Pomodoro session is running, while text is being typed, or while the page is hidden, so nothing the user is doing is lost
+- **Foreground update checks:** the app now checks for updates when it returns to the foreground (`visibilitychange`) and when connectivity returns (`online`) — an Android PWA sitting in the background picks up new versions on next open instead of waiting for a full relaunch
+- `updateViaCache: "none"` on registration: service-worker update checks always hit the network (GitHub Pages' short HTTP cache no longer delays them)
+- **Atomic versions:** HTML is now served from the same release cache as the app's assets (network as fallback), so loads prefer one consistent version instead of mixing freshly fetched HTML with old cached code
+
+### Note for this one release
+
+- Installations that are already open (running pre-3.3.3 code) need one ordinary close-and-reopen to pick up the new updater; every release after that updates fully automatically. No uninstall/reinstall is ever needed.
+
 ## 3.3.2 — 2026-10-21
 
 ### Fixed
 
-- **Installed app version now shows correctly:** the manifest gained `version` / `version_name` fields (Android's WebAPK reads these for the app-info screen — without them it displayed "1"). They are kept in sync with the release version by a test, so every future release updates them
+- **Release version fields in the manifest:** the manifest gained `version` / `version_name` fields as release metadata, kept in sync with the release version by a test. Note: the version shown in Android's app-info screen for installed WebAPKs is controlled by Chrome's WebAPK metadata and may not reflect these fields — that display is outside the site's control
 
 ## 3.3.1 — 2026-10-21
 
