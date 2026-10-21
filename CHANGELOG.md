@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.3.2 — 2026-10-21
+
+### Fixed
+
+- **Installed app version now shows correctly:** the manifest gained `version` / `version_name` fields (Android's WebAPK reads these for the app-info screen — without them it displayed "1"). They are kept in sync with the release version by a test, so every future release updates them
+
 ## 3.3.1 — 2026-10-21
 
 English install experience and an opening splash screen.

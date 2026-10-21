@@ -1156,6 +1156,17 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       assert(html.includes('<title>Small Steps'), "statik başlık İngilizce değil");
       assert(html.includes('og:locale" content="en_US'), "og:locale güncellenmedi");
     });
+
+    await test("Sürüm alanları eşit ve senkron (manifest = package.json = SW önbelleği)", () => {
+      const m = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
+      const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
+      const sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
+      assert(m.version && m.version_name, "manifest'te version/version_name yok (Android '1' gösterir)");
+      eq(m.version_name, pkg.version, "manifest.version_name ile package.json sürümü eşleşmiyor");
+      eq(m.version, pkg.version, "manifest.version ile package.json sürümü eşleşmiyor");
+      assert(sw.includes(`minik-adimlar-v${pkg.version}`), "SW önbellek adı sürümle eşleşmiyor");
+      assert(/^\d+(\.\d+){0,3}$/.test(m.version), "version 1-4 noktayla ayrılmış tam sayı olmalı");
+    });
   }
 
   console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız`);
