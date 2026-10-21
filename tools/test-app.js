@@ -417,6 +417,17 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       const gorunen = $$(dom, "#task-list .task").length;
       eq(gorunen, st.tasks.length, "görünmeyen (iki seviyeye gömülü) görev var");
     });
+    await test("Görünen her görev CSV dışa aktarmasında da yer alır", () => {
+      w.document.querySelector("#export-csv").click();
+      const csv = w.__lastBlob.__text;
+      const satirlar = csv.split("\r\n").filter(r => r.trim());
+      eq(satirlar.length, 4, "başlık + 3 görev satırı bekleniyordu");
+      assert(csv.includes('"Terfiden sonra eklenen alt görev"'), "yeni alt görev CSV'de yok");
+      // yeni alt görev satırı, terfi eden görevin parent_text'iyle gelmeli
+      const yeniSatiri = satirlar.find(r => r.includes("Terfiden sonra eklenen"));
+      assert(yeniSatiri.includes('"Açık alt görev"'), "yeni alt görevin parent_text'i terfi eden görev değil");
+      assert(csv.includes('"Bitmiş üst"'), "geri gelen üst görev CSV'de yok");
+    });
     dom.window.close();
   }
 
