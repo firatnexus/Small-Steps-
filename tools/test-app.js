@@ -1183,6 +1183,30 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       dom.window.close();
     });
 
+    await test("Hatırlanan belgede (gizlenip geri dönme) açılış ekranı tekrar oynamaz", async () => {
+      /* Kurulu uygulama arka plandan hatırlanırsa belge aynı kalır — yükleme
+         yoktur, ekran yeniden belirmemeli ve uygulama bozulmamalıdır. */
+      const dom = await launch();
+      for (let i = 0; i < 30 && $(dom, "#splash"); i++) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      eq($(dom, "#splash"), null, "açılış ekranı kaldırılmadı");
+      const w = dom.window;
+      let visible = true;
+      Object.defineProperty(w.document, "visibilityState", {
+        get: () => (visible ? "visible" : "hidden"),
+        configurable: true
+      });
+      visible = false;
+      w.document.dispatchEvent(new w.Event("visibilitychange"));
+      visible = true;
+      w.document.dispatchEvent(new w.Event("visibilitychange"));
+      await new Promise((r) => setTimeout(r, 800));
+      eq($(dom, "#splash"), null, "hatırlanan belgede açılış ekranı yeniden belirdi");
+      assert(!!$(dom, "#lang-select"), "gizle-göster sonrası arayüz bozuldu");
+      dom.window.close();
+    });
+
     await test("PWA yükleme adları İngilizce (manifest + apple başlığı)", () => {
       const m = JSON.parse(fs.readFileSync(path.join(root, "manifest.json"), "utf8"));
       eq(m.short_name, "Small Steps", "manifest short_name İngilizce olmalı");
