@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.3.4 — 2026-10-21
+
+The splash screen now also shows when the installed app is launched from the home screen.
+
+### Fixed
+
+- **Splash screen on cold launch of the installed app:** on Android, the installed PWA loads its document behind the OS/Chrome native launch screen, so the document is `visibilityState: "hidden"` while the splash's minimum display time already elapses — the user never saw it. The splash timer now starts only when the document actually becomes visible, and its entrance animations (sprout growing, title rising) are replayed at that moment, so the same screen that appears on an in-app refresh also appears on every app launch. Within a visible document the behavior is unchanged: the splash shows for about 0.55s and then fades.
+
 ## 3.3.3 — 2026-10-21
 
 Seamless updates — no more deleting and reinstalling the PWA after a release.

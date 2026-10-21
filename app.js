@@ -1787,21 +1787,40 @@
       return !sessionInProgress && !hasDraft;
     };
 
-    /* Açılış ekranı: ilk çizimden sonra soluklaştır ve DOM'dan kaldır.
-       Çift requestAnimationFrame ilk kareyi garantiler; açılışın en az
-       ~0,55 sn görünmesi için yükleme hızından bağımsız bekleme eklenir
-       (hızlı açılışta göz kırpamasın diye). */
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        const splash = document.getElementById("splash");
-        if (!splash) return;
-        const wait = Math.max(0, 550 - performance.now());
-        setTimeout(() => {
-          splash.classList.add("splash-hide");
-          setTimeout(() => splash.remove(), 600);
-        }, wait);
-      });
-    });
+    /* Açılış ekranı: en az ~0,55 sn GÖRÜNÜR kaldıktan sonra soluklaşır.
+       Çift requestAnimationFrame ilk kareyi garantiler. Süre sayfa
+       görünür olana dek başlamaz: kurulu uygulamada soğuk açılışta
+       belge Android'in yerel açılış ekranı arkasında gizli yüklenir;
+       performans.now() o ana kadar işlemiş olacağından bekleme sıfır
+       kalır ve ekran kullanıcı görmeden solup giderdi. */
+    const splashEl = document.getElementById("splash");
+    if (splashEl) {
+      const beginSplash = () => {
+        /* Belge gizli yüklenmişse CSS giriş animasyonları arka planda
+           bitmiş olabilir; görünür olunca bir kez daha oynat. */
+        splashEl.querySelectorAll(".splash-sprout, .splash-name, .splash-tag")
+          .forEach((el) => {
+            el.style.animation = "none";
+            void el.offsetHeight; /* reflow: animasyonu sıfırla */
+            el.style.animation = "";
+          });
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              splashEl.classList.add("splash-hide");
+              setTimeout(() => splashEl.remove(), 600);
+            }, 550);
+          });
+        });
+      };
+      if (document.visibilityState === "visible") {
+        beginSplash();
+      } else {
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "visible") beginSplash();
+        }, { once: true });
+      }
+    }
   }
 
   if (document.readyState === "loading") {
