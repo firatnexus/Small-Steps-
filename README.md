@@ -7,7 +7,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.1.0-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.2.0-267354?style=flat-square)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-kurulumu)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-diller)
@@ -43,6 +43,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 ### 📝 Görevler
 
 - **Alt görevler** — ＋ ile büyük bir görevi küçük adımlara böl; ebeveyn satırında ilerleme rozeti (ör. 2/5)
+- **Tekrarlayan görevler** — ↻ ile her gün / hafta içi / her hafta tekrar; tamamlanınca yenisi otomatik doğar, erken tamamlama zamanlanan günün ötesine atlar
 - **Göreve bağlı odak** — ◎ düğmesiyle görev seç; tamamlanan her pomodoro, dakikaları o göreve işleniyor
 - **Öncelikler** — yok / düşük / orta / yüksek, renkli şeritle
 - **Arama** — anlık, aksan dostu ("ikinci" yaz, "İkinci"yi bulur)
@@ -64,6 +65,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 ### 💾 Veri
 
 - **JSON dışa/içe aktarma** — görevler, ayarlar, geçmiş, tema ve dil dahil tam yedek
+- **Todoist'ten içe aktarma (CSV)** — Todoist CSV dışa aktarmanı yükle: görevler, öncelikler, tarihler ve tek seviyeli hiyerarşi aktarılır
 - **CSV dışa aktarma** — görevleri tablo uygulamalarında aç (UTF-8 BOM + RFC 4180 uyumlu)
 - Her şey `localStorage`'da kalır — hesap yok, sunucu yok, izleme yok
 

@@ -38,6 +38,40 @@
   const todayKey = (d = new Date()) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
+  /* Saf takvim yardımcıları (v3.2): YYYY-MM-DD dizgeleri UTC'ye çevrilmeden,
+     yerel Date üzerinden işlenir — saat dilimi kaymasına ve yaz saati
+     kaymalarına kapalıdır. */
+  const dateFromKey = (key) => {
+    const [y, m, d] = key.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  };
+  const addDaysKey = (key, n) => {
+    const dt = dateFromKey(key);
+    dt.setDate(dt.getDate() + n);
+    return todayKey(dt);
+  };
+  const isWeekendKey = (key) => {
+    const wd = dateFromKey(key).getDay();
+    return wd === 0 || wd === 6;
+  };
+  /* Tekrar kuralına göre bir sonraki occurrence: fromKey gününden itibaren.
+     daily → +1 gün; weekdays → bir sonraki hafta içi gün; weekly → +7 gün. */
+  function nextOccurrence(rule, fromKey) {
+    if (rule === "weekly") return addDaysKey(fromKey, 7);
+    let k = addDaysKey(fromKey, 1);
+    if (rule === "weekdays") {
+      while (isWeekendKey(k)) k = addDaysKey(k, 1);
+    }
+    return k;
+  }
+  const formatDue = (key) => {
+    if (key === todayKey()) return t("dueToday");
+    if (key === addDaysKey(todayKey(), 1)) return t("dueTomorrow");
+    try {
+      return dateFromKey(key).toLocaleDateString(getLang(), { day: "numeric", month: "short" });
+    } catch { return key; }
+  };
+
   const formatClock = (sec) => {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
@@ -92,6 +126,8 @@
     exportCsv:   $("#export-csv"),
     importData:  $("#import-data"),
     importFile:  $("#import-file"),
+    importTodoist:     $("#import-todoist"),
+    importTodoistFile: $("#import-todoist-file"),
     // Kısayollar
     shortcutsDialog: $("#shortcuts-dialog"),
     shortcutsClose:  $("#shortcuts-close"),
@@ -116,7 +152,10 @@
       doneAt: Number.isFinite(raw.doneAt) ? raw.doneAt : (raw.done ? Date.now() : null),
       priority: clampInt(raw.priority, 0, 3, 0),
       focus: Number.isFinite(raw.focus) ? Math.max(0, Math.round(raw.focus)) : 0,
-      parentId: typeof raw.parentId === "string" && raw.parentId ? raw.parentId : null
+      parentId: typeof raw.parentId === "string" && raw.parentId ? raw.parentId : null,
+      repeat: ["daily", "weekdays", "weekly"].includes(raw.repeat) ? raw.repeat : null,
+      dueAt: typeof raw.dueAt === "string" && /^\d{4}-\d{2}-\d{2}$/.test(raw.dueAt) ? raw.dueAt : null,
+      respawnedFrom: typeof raw.respawnedFrom === "string" && raw.respawnedFrom ? raw.respawnedFrom : null
     };
   }
 
@@ -389,6 +428,39 @@
     editInput.addEventListener("blur", () => commit(true));
   }
 
+  /* ---------- Tekrarlayan görevler (v3.2) ----------
+     Yalnız alt görevi olmayan üst seviye görevler tekrarlayabilir.
+     Tamamlanınca (incomplete → complete geçişi) tam bir kez yeni occurrence
+     doğar; erken tamamlama zamanlanan günün ötesine atlar, gecikmede
+     birikim oluşmaz. Geri açma yalnızca yeni occurrence'a dokunulmadıysa
+     mümkündür — dokunulduysa her iki kayıt da korunur ve neden açıklanır. */
+  const REPEAT_KEYS = ["repeatNone", "repeatDaily", "repeatWeekdays", "repeatWeekly"];
+  const REPEAT_CYCLE = [null, "daily", "weekdays", "weekly"];
+
+  function spawnSuccessor(task) {
+    let base = todayKey();
+    if (task.dueAt && task.dueAt > base) base = task.dueAt; // erken tamamlama
+    state.tasks.push({
+      id: uid(), text: task.text, done: false,
+      createdAt: Date.now(), doneAt: null,
+      priority: task.priority, focus: 0, parentId: null,
+      repeat: task.repeat, dueAt: nextOccurrence(task.repeat, base),
+      respawnedFrom: task.id
+    });
+  }
+
+  function despawnSuccessor(task) {
+    const idx = state.tasks.findIndex(t => t.respawnedFrom === task.id);
+    if (idx === -1) return true; // doğacak yok: eski veri, geri açmaya izin ver
+    const s = state.tasks[idx];
+    const untouched = !s.done && s.text === task.text &&
+      s.priority === task.priority && (s.focus || 0) === 0 &&
+      childrenOf(s.id).length === 0;
+    if (!untouched) return false;
+    state.tasks.splice(idx, 1);
+    return true;
+  }
+
   function buildTaskItem(task) {
     const item = document.createElement("li");
     item.className = `task${task.parentId ? " subtask" : ""}${task.done ? " done" : ""}${task.priority ? ` prio-${task.priority}` : ""}`;
@@ -402,25 +474,39 @@
                 : t("taskAriaComplete", { text: task.text }));
     checkbox.addEventListener("change", () => {
       const wasDoneAt = task.doneAt;
-      task.done = checkbox.checked;
-      task.doneAt = task.done ? Date.now() : null;
-      if (task.done) {
-        // İstatistik yalnızca üst seviye görevleri sayar; alt görev ilerlemesi
-        // ebeveynin "2/5" rozetinde görünür.
+      const newlyDone = checkbox.checked && !task.done;
+      const reopened = !checkbox.checked && task.done;
+
+      if (newlyDone) {
+        task.done = true;
+        task.doneAt = Date.now();
         if (!task.parentId) {
           recordHistory(todayKey(), "done", 1);
+          if (task.repeat) spawnSuccessor(task);
           const total = topTasks().length;
           const done = topTasks().filter(t => t.done).length;
           if (total > 1 && done === total) {
             showToast(t("toastAllDone"));
           }
         }
-      } else if (wasDoneAt && todayKey(new Date(wasDoneAt)) === todayKey()) {
-        // geri alma: aynı gün tamamlanmışsa sayıyı geri al (yalnız üst seviye)
-        if (!task.parentId) {
+      } else if (reopened) {
+        if (task.repeat && !task.parentId && !despawnSuccessor(task)) {
+          // Yeni occurrence'a dokunulmuş: her iki kayıt korunur, geri açılamaz
+          showToast(t("toastReopenBlocked"));
+          checkbox.checked = true;
+          return;
+        }
+        task.done = false;
+        task.doneAt = null;
+        if (wasDoneAt && todayKey(new Date(wasDoneAt)) === todayKey() && !task.parentId) {
+          // geri alma: aynı gün tamamlanmışsa sayıyı geri al (yalnız üst seviye)
           const day = todayKey();
           if ((history[day]?.done || 0) > 0) recordHistory(day, "done", -1);
         }
+      } else {
+        // durum zaten eşleşiyordur (tekrar tıklamalar): sadece eşitle
+        task.done = checkbox.checked;
+        task.doneAt = task.done ? Date.now() : null;
       }
       save(); renderTasks();
     });
@@ -450,6 +536,22 @@
         pill.className = "focus-pill subtask-pill";
         pill.textContent = `${kidsDone}/${kids.length}`;
         pill.title = t("subtaskProgress");
+        meta.appendChild(pill);
+      }
+    }
+
+    // Tekrar ve tarih rozetleri yalnız aktif görevlerde (tamamlanan occurrence'larda gizli)
+    if (!task.done && !task.parentId) {
+      if (task.repeat) {
+        const pill = document.createElement("span");
+        pill.className = "focus-pill repeat-pill";
+        pill.textContent = `↻ ${t(REPEAT_KEYS[REPEAT_CYCLE.indexOf(task.repeat)])}`;
+        meta.appendChild(pill);
+      }
+      if (task.dueAt) {
+        const pill = document.createElement("span");
+        pill.className = "focus-pill due-pill";
+        pill.textContent = formatDue(task.dueAt);
         meta.appendChild(pill);
       }
     }
@@ -487,6 +589,19 @@
         makeIconButton(t("subtaskAdd"), "＋", "subtask-btn", () => startSubtaskAdd(item, task)),
         actions.lastElementChild
       );
+    }
+
+    // Tekrar döngüsü düğmesi: alt görevi olmayan, aktif üst görevlerde.
+    // Tamamlanmış occurrence'lar kontrol sunmaz (yanlışlıkla yeni seri doğmasın).
+    if (!task.parentId && !task.done && childrenOf(task.id).length === 0) {
+      const idx = REPEAT_CYCLE.indexOf(task.repeat || null);
+      const repeatBtn = makeIconButton(t(REPEAT_KEYS[idx]), "↻", "repeat-btn", () => {
+        task.repeat = REPEAT_CYCLE[(idx + 1) % REPEAT_CYCLE.length];
+        save(); renderTasks();
+      });
+      repeatBtn.classList.toggle("is-active", !!task.repeat);
+      repeatBtn.dataset.level = String(idx);
+      actions.insertBefore(repeatBtn, actions.lastElementChild);
     }
 
     item.append(checkbox, text, meta, actions);
@@ -791,18 +906,18 @@
   const csvEscape = (value) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
   function exportTasksCsv() {
-    const rows = [["type", "text", "done", "priority", "focus_minutes", "parent_text", "created_at", "completed_at"]];
+    const rows = [["type", "text", "done", "priority", "focus_minutes", "parent_text", "repeat", "due_date", "created_at", "completed_at"]];
     for (const parent of topTasks()) {
       rows.push([
         "task", parent.text, parent.done ? "yes" : "no", parent.priority,
-        parent.focus, "",
+        parent.focus, "", parent.repeat || "", parent.dueAt || "",
         new Date(parent.createdAt).toISOString(),
         parent.doneAt ? new Date(parent.doneAt).toISOString() : ""
       ]);
       for (const kid of childrenOf(parent.id)) {
         rows.push([
           "subtask", kid.text, kid.done ? "yes" : "no", kid.priority,
-          kid.focus, parent.text,
+          kid.focus, parent.text, kid.repeat || "", kid.dueAt || "",
           new Date(kid.createdAt).toISOString(),
           kid.doneAt ? new Date(kid.doneAt).toISOString() : ""
         ]);
@@ -818,6 +933,93 @@
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  /* ---------- Todoist CSV içe aktarma (v3.2) ----------
+     Todoist'in resmi CSV biçimi: TYPE,CONTENT,DESCRIPTION,PRIORITY,INDENT,
+     AUTHOR,RESPONSIBLE,DATE,DATE_LANG,TIMEZONE sütunları; ayırıcı virgül
+     veya noktalı virgül olabilir (başlıktan otomatik algılanır).
+     TYPE=task satırları alınır; INDENT 1 → üst görev, 2+ → son üst görevin
+     alt görevi (tek seviyeye düzleştirilir). PRIORITY 1 (p1, en yüksek) →
+     3'e eşlenir, 4 → 0'a. DATE yalnız YYYY-MM-DD ile başlıyorsa dueAt
+     olarak alınır; doğal dil/tekrar ifadeleri ve bölüm/not satırları
+     atlanır — onay penceresi kaç kaydın atlanacağını gösterir. */
+  function parseDelimited(text) {
+    const src = text.replace(/^\uFEFF/, "");
+    const firstLine = src.split(/\r?\n/)[0] || "";
+    const delim = firstLine.split(";").length > firstLine.split(",").length ? ";" : ",";
+    const rows = [];
+    let row = [], field = "", inQuotes = false;
+    for (let i = 0; i < src.length; i++) {
+      const ch = src[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (src[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += ch;
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === delim) {
+        row.push(field); field = "";
+      } else if (ch === "\n") {
+        row.push(field); rows.push(row); row = []; field = "";
+      } else if (ch !== "\r") {
+        field += ch;
+      }
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  function importTodoistCsv(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const rows = parseDelimited(String(reader.result));
+        const headerIdx = rows.findIndex(r =>
+          r.some(c => String(c).trim().toLowerCase() === "type") &&
+          r.some(c => String(c).trim().toLowerCase() === "content"));
+        if (headerIdx === -1) { showToast(t("todoistInvalid")); return; }
+        const cols = {};
+        rows[headerIdx].forEach((c, i) => {
+          const name = String(c).trim().toUpperCase();
+          if (!(name in cols)) cols[name] = i;
+        });
+        const get = (r, col) => col in cols ? String(r[cols[col]] ?? "").trim() : "";
+
+        const tasks = [];
+        let skipped = 0, lastTop = null;
+        for (let i = headerIdx + 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r.length || r.every(c => !String(c).trim())) continue;
+          if (get(r, "TYPE").toLowerCase() !== "task") { skipped++; continue; }
+          const text = get(r, "CONTENT").slice(0, 120);
+          if (!text) { skipped++; continue; }
+          const prioRaw = parseInt(get(r, "PRIORITY"), 10);
+          const priority = (prioRaw >= 1 && prioRaw <= 4) ? 4 - prioRaw : 0; // 1→3 … 4→0
+          const dateRaw = get(r, "DATE");
+          const iso = /^(\d{4}-\d{2}-\d{2})/.exec(dateRaw);
+          const dueAt = iso ? iso[1] : null;
+          const indent = parseInt(get(r, "INDENT"), 10) || 1;
+          const task = {
+            id: uid(), text, done: false, createdAt: Date.now(), doneAt: null,
+            priority, focus: 0,
+            parentId: indent >= 2 && lastTop ? lastTop : null,
+            repeat: null, dueAt, respawnedFrom: null
+          };
+          if (!task.parentId) lastTop = task.id;
+          tasks.push(task);
+        }
+        if (!tasks.length) { showToast(t("todoistInvalid")); return; }
+        if (!window.confirm(t("todoistConfirm", { n: tasks.length, m: skipped }))) return;
+        state.tasks.push(...tasks);
+        save(); renderTasks();
+        showToast(t("todoistDone", { n: tasks.length }));
+      } catch {
+        showToast(t("todoistInvalid"));
+      }
+    };
+    reader.readAsText(file);
   }
 
   function importBackup(file) {
@@ -1139,6 +1341,13 @@
       const file = els.importFile.files?.[0];
       els.importFile.value = "";
       if (file) importBackup(file);
+    });
+
+    els.importTodoist.addEventListener("click", () => els.importTodoistFile.click());
+    els.importTodoistFile.addEventListener("change", () => {
+      const file = els.importTodoistFile.files?.[0];
+      els.importTodoistFile.value = "";
+      if (file) importTodoistCsv(file);
     });
 
     els.clearDone.addEventListener("click", () => {

@@ -16,6 +16,19 @@
   <meta name="apple-mobile-web-app-title" content="Minik Adımlar">
   <meta name="mobile-web-app-capable" content="yes">
 
+  <!-- Paylaşım önizlemesi (Open Graph / Twitter) -->
+  <meta property="og:title" content="Small Steps — Minik Adımlar">
+  <meta property="og:description" content="Calm, offline-first task list + Pomodoro PWA. Zero dependencies, 12 languages — your data never leaves your browser.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://firatnexus.github.io/Small-Steps-/">
+  <meta property="og:image" content="https://firatnexus.github.io/Small-Steps-/social-preview.png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="Small Steps — task list and Pomodoro timer">
+  <meta property="og:locale" content="tr_TR">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="https://firatnexus.github.io/Small-Steps-/">
+
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -134,6 +147,8 @@
                     data-i18n-title="csvNote"></button>
             <button class="secondary" id="import-data" type="button" data-i18n="importData"></button>
             <input type="file" id="import-file" accept="application/json,.json" hidden>
+            <button class="secondary" id="import-todoist" type="button" data-i18n="importTodoist"></button>
+            <input type="file" id="import-todoist-file" accept=".csv,text/csv" hidden>
           </div>
         </details>
 

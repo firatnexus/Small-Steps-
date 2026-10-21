@@ -4,7 +4,7 @@
    ============================================================ */
 /* Sürüm notu: app.js / style.css / translations.js değişirse bu adımı
    güncelle — aksi halde eski önbellek yeni kullanıcılara ulaşmaz. */
-const CACHE = "minik-adimlar-v3.1.0";
+const CACHE = "minik-adimlar-v3.2.0";
 
 const ASSETS = [
   "./",
@@ -13,7 +13,8 @@ const ASSETS = [
   "./translations.js",
   "./app.js",
   "./manifest.json",
-  "./icon.svg"
+  "./icon.svg",
+  "./social-preview.png"
 ];
 
 self.addEventListener("install", (event) => {

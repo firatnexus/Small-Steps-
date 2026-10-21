@@ -1,5 +1,27 @@
 # Changelog
 
+## 3.2.0 — 2026-10-21
+
+Tekrarlayan görevler, Todoist'ten içe aktarma ve keşfedilebilirlik.
+
+### Eklendi
+
+- **Tekrarlayan görevler** — üst seviye görevdeki ↻ düğmesi: yok → her gün → hafta içi → her hafta döngüsü. Tamamlanınca yeni occurrence otomatik doğar (geçmiş istatistiğe işlenir) ve görev satırında tekrar rozeti (↻ Her gün tekrar) + tarih rozeti (bugün / yarın / tarih) görünür
+  - **Tekrar kuralları:** erken tamamlama zamanlanan günün ötesine atlar; gecikmede birikim yok (geçen günler tek tek doğmaz)
+  - **Geri açma koruması:** tamamlanan occurrence yalnızca yeni occurrence'a hiç dokunulmadıysa geri açılabilir (yeni occurrence o zaman silinir ve istatistik geri alınır). Dokunulduysa her iki kayıt da korunur ve toast nedenini açıklar
+  - Tekrar yalnızca alt görevi olmayan üst seviye görevlerde kullanılabilir; tamamlanmış occurrence'larda kontrol sunulmaz (yanlışlıkla yeni seri doğmasın)
+- **Todoist'ten içe aktarma (CSV)** — Ayarlar → Verilerin → Todoist'ten içe aktar: Todoist'in resmi CSV dışa aktarma dosyasını yükle; TYPE=task satırları görev olarak eklenir (INDENT 2+ alt görev olur, tek seviyeye düzleştirilir), öncelik 1-4 eşlenir, YYYY-MM-DD tarihleri aktarılır. Bölüm/not satırları ve doğal dil tarih/tekrar ifadeleri atlanır — onay penceresi kaç satır atlanacağını gösterir. Ayırıcı virgül ya da noktalı virgül olabilir (otomatik algılanır)
+- **Paylaşım önizlemesi** — Open Graph / Twitter kart etiketleri ve 1280×640 sosyal önizleme görseli eklendi; repo açıklaması, konu etiketleri ve ana sayfa bağlantısı ayarlandı
+
+### Değişti
+
+- **CSV dışa aktarma** iki yeni sütun: `repeat` (daily/weekdays/weekly) ve `due_date` (YYYY-MM-DD)
+
+### Davranış kuralları (belgelendi)
+
+- Yeni occurrence yalnızca "tamamlanmamış → tamamlandı" geçişinde doğar — yeniden yükleme/içe aktarma çoğaltmaz
+- Tamamlananları temizle, tekrarlayan görevin yeni occurrence'ına dokunmaz
+
 ## 3.1.0 — 2026-10-21
 
 Alt görevler ve CSV dışa aktarma: büyük işleri gerçekten küçük adımlara bölme.
