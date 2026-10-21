@@ -1162,10 +1162,14 @@
       save(); renderTasks();
       showToast(t("toastCleared", { n: removed.length }), t("toastUndo"), () => {
         restoreTasks(removed, snapshot);
-        // Terfi edilen alt görevlerin parentId'sini de geri getir
+        // Terfi edilen alt görevlerin parentId'sini geri getir — ama yalnızca
+        // terfi sırasında kendi alt görevini edinmediyse. Edinmişse üst seviyede
+        // kalır (tek seviye kuralı): ebeveynin altına geri konursa yeni alt
+        // görevi iki seviye derine gömülür ve listede görünmez olur.
         for (const task of state.tasks) {
           if (!task.parentId && origParents.get(task.id)) {
-            task.parentId = origParents.get(task.id);
+            const hasOwnKids = state.tasks.some(t => t.parentId === task.id);
+            if (!hasOwnKids) task.parentId = origParents.get(task.id);
           }
         }
         save(); renderTasks(); renderFocusTask();

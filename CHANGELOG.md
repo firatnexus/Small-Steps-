@@ -16,7 +16,7 @@ Alt görevler ve CSV dışa aktarma: büyük işleri gerçekten küçük adımla
 - Durum ve arama filtreleri üst seviye görevlere uygulanır; alt görevler bağlam olarak ebeveynin altında görünür. Aramada alt görev eşleşmesi ebeveyni de listeye çıkarır
 - Sayaç ve günlük istatistik yalnızca üst seviye görevleri sayar; alt görev ilerlemesi ebeveyndeki rozettedir
 - Bir üst görevi tamamlamak alt görevleri otomatik tamamlamaz (ve tersi) — tamamlama her zaman açık seçimdir
-- **Tamamlananları temizle**, tamamlanan üst görevin AÇIK alt görevlerini silmez — onları üst seviyeye terfi ettirir; geri alma hiyerarşiyi aynen geri getirir
+- **Tamamlananları temizle**, tamamlanan üst görevin AÇIK alt görevlerini silmez — onları üst seviyeye terfi ettirir; geri alma hiyerarşiyi geri getirir (terfi eden görev arada kendi alt görevini edinmişse tek seviye kuralı için üst seviyede kalır)
 
 ### İçe aktarma sağlamlaştırma
 

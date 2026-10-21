@@ -361,6 +361,65 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
+  console.log("\n— Terfi çakışması: geri almada tek seviye kuralı —");
+  {
+    // 1) Üst görev tamamla + açık alt görevi var
+    // 2) Tamamlananları temizle → alt görev terfi eder
+    // 3) Terfi eden göreve YENİ alt görev ekle
+    // 4) Geri al → terfi eden görev üst seviyede kalmalı (yeni alt görevi
+    //    iki seviyeye gömülmesin diye), her görev görünür kalmalı
+    const dom = await launch({
+      state: {
+        tasks: [
+          { id: "p", text: "Bitmiş üst", done: true, createdAt: 1, doneAt: 2, priority: 0, focus: 0 },
+          { id: "k", text: "Açık alt görev", done: false, createdAt: 1, doneAt: null, priority: 0, focus: 0, parentId: "p" }
+        ],
+        settings: { focus: 25, short: 5, long: 15, longEvery: 4, autoStart: false, sound: true },
+        stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null
+      }
+    });
+    const w = dom.window;
+
+    w.document.querySelector("#clear-done").click();
+    await settled();
+
+    // Terfi eden göreve yeni alt görev ekle
+    w.document.querySelector(".subtask-btn").click();
+    const input = w.document.querySelector(".subtask-add input");
+    input.value = "Terfiden sonra eklenen alt görev";
+    input.dispatchEvent(new w.KeyboardEvent("keydown", { key: "Enter", cancelable: true }));
+    await settled();
+
+    await test("Terfi eden görev yeni alt görevini görünür şekilde tutar", () => {
+      const st = readState(dom);
+      const kid = st.tasks.find(t => t.id === "k");
+      assert(kid && !kid.parentId, "k henüz terfi etmedi");
+      eq($$(dom, "#task-list .task").length, 2, "her görev görünür olmalı");
+      eq($$(dom, "#task-list .task.subtask").length, 1);
+    });
+
+    // Geri al
+    w.document.querySelector("#toast button").click();
+    await settled();
+    await test("Geri almada tek seviye kuralı bozulmaz: terfi eden üst seviyede kalır", () => {
+      const st = readState(dom);
+      eq(st.tasks.length, 3, "tamamlanan üst + terfi eden + yeni alt görev");
+      const p = st.tasks.find(t => t.id === "p");
+      const k = st.tasks.find(t => t.id === "k");
+      const yeni = st.tasks.find(t => t.text === "Terfiden sonra eklenen alt görev");
+      assert(p, "tamamlanan üst görev geri gelmedi");
+      assert(yeni, "yeni alt görev kayboldu");
+      assert(!k.parentId, "k geri alınınca ebeveyne geri kondu — iki seviye oluşur");
+      eq(yeni.parentId, "k", "yeni alt görevin ebeveyni terfi eden görev olmalı");
+    });
+    await test("Her görev listede görünür durumda", () => {
+      const st = readState(dom);
+      const gorunen = $$(dom, "#task-list .task").length;
+      eq(gorunen, st.tasks.length, "görünmeyen (iki seviyeye gömülü) görev var");
+    });
+    dom.window.close();
+  }
+
   console.log("\n— JSON dosya yoluyla içe aktarma (gerçek FileReader akışı) —");
   {
     const dom = await launch({
@@ -396,6 +455,8 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       const kid = st.tasks.find(t => t.text === "Alt adım");
       assert(kid && kid.parentId === "p", "hiyerarşi kayboldu");
       assert(kid.done === true, "tamamlanma durumu kayboldu");
+      eq(st.tasks.find(t => t.text === "Ana iş").focus, 30, "görev odak toplamı kayboldu");
+      eq(st.stats.focusMinutes, 7, "günlük odak istatistiği kayboldu");
       eq(st.settings.focus, 50, "ayarlar geri gelmedi");
       assert(st.settings.autoStart === true, "autoStart kayboldu");
       eq(st.activeTaskId, "p", "odak görevi kayboldu");
