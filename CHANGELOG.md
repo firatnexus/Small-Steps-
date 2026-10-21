@@ -21,6 +21,12 @@ Tekrarlayan görevler, Todoist'ten içe aktarma ve keşfedilebilirlik.
 
 - Yeni occurrence yalnızca "tamamlanmamış → tamamlandı" geçişinde doğar — yeniden yükleme/içe aktarma çoğaltmaz
 - Tamamlananları temizle, tekrarlayan görevin yeni occurrence'ına dokunmaz
+- **Tekrar ve alt görev birbirini dışlar:** tekrarlayan görevde ＋ görünmez, alt görevlisi görevde ↻ görünmez; içe aktarılan uyumsuz veride alt görevlisi görevin tekrarı temizlenir
+- **Geri açma muhasebesi gün aşırı doğrudur:** sayaç, tamamlanınca yazılan güne geri alınır — dün tamamlanıp bugün geri açılan görev dünün sayacını düşürür, bugünkü sayaca dokunmaz
+- **Tekrarı değişen successor da "dokunulmuş" sayılır:** yeni occurrence'ın metni, önceliği, tekrarı veya odak toplamı değiştiyse geri açma engellenir
+- Successor kullanıcı tarafından silindiyse geri açma serbesttir (kullanıcının açık tercihi)
+- **Bozuk CSV reddedilir:** kapanmamış tırnak içeren dosya onaya hiç gelmez; imkânsız takvim tarihleri (2026-13-45) aktarılmaz ve atlanan tarih sayısı onay penceresinde ayrıca belirtilir
+- Bölüm (section) satırı, girintili görevlerin ebeveyn bağlamını sıfırlar — bölüm sonrası INDENT 2 görev üst seviyeye düşer
 
 ## 3.1.0 — 2026-10-21
 

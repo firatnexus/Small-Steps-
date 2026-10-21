@@ -85,7 +85,7 @@
       dueTomorrow: "tomorrow",
       toastReopenBlocked: "This recurring task can't be reopened because its next occurrence was changed.",
       importTodoist: "Import from Todoist (CSV)",
-      todoistConfirm: "{n} tasks will be added and {m} rows skipped (sections, notes, unsupported date or repeat formats). Continue?",
+      todoistConfirm: "{n} tasks will be added, {m} rows skipped (sections, notes) and {d} due date(s) omitted (unsupported formats). Continue?",
       todoistDone: "{n} tasks imported from Todoist.",
       todoistInvalid: "This file is not a valid Todoist CSV export."
     },
@@ -162,7 +162,7 @@
       dueTomorrow: "yarın",
       toastReopenBlocked: "Bu tekrarlayan görev geri açılamaz — yeni tekrarı değiştirildi.",
       importTodoist: "Todoist'ten içe aktar (CSV)",
-      todoistConfirm: "{n} görev eklenir, {m} satır atlanır (bölüm, not, desteklenmeyen tarih/tekrar biçimleri). Devam edilsin mi?",
+      todoistConfirm: "{n} görev eklenir, {m} satır atlanır (bölüm, not) ve {d} tarih atlanır (desteklenmeyen biçim). Devam edilsin mi?",
       todoistDone: "Todoist'ten {n} görev eklendi.",
       todoistInvalid: "Bu dosya geçerli bir Todoist CSV dosyası değil."
     },
@@ -239,7 +239,7 @@
       dueTomorrow: "mañana",
       toastReopenBlocked: "Esta tarea recurrente no se puede reabrir: su próxima repetición fue modificada.",
       importTodoist: "Importar de Todoist (CSV)",
-      todoistConfirm: "Se añadirán {n} tareas y se omitirán {m} filas (secciones, notas, formatos de fecha o repetición no compatibles). ¿Continuar?",
+      todoistConfirm: "Se añadirán {n} tareas, se omitirán {m} filas (secciones, notas) y {d} fecha(s) vencida(s) omitida(s) (formatos no compatibles). ¿Continuar?",
       todoistDone: "{n} tareas importadas de Todoist.",
       todoistInvalid: "Este archivo no es una exportación CSV válida de Todoist."
     },
@@ -316,7 +316,7 @@
       dueTomorrow: "demain",
       toastReopenBlocked: "Cette tâche récurrente ne peut pas être rouverte : sa prochaine occurrence a été modifiée.",
       importTodoist: "Importer depuis Todoist (CSV)",
-      todoistConfirm: "{n} tâches seront ajoutées et {m} lignes ignorées (sections, notes, formats de date ou de répétition non pris en charge). Continuer ?",
+      todoistConfirm: "{n} tâches seront ajoutées, {m} lignes ignorées (sections, notes) et {d} date(s) d'échéance omise(s) (formats non pris en charge). Continuer ?",
       todoistDone: "{n} tâches importées depuis Todoist.",
       todoistInvalid: "Ce fichier n'est pas une exportation CSV Todoist valide."
     },
@@ -393,7 +393,7 @@
       dueTomorrow: "morgen",
       toastReopenBlocked: "Diese wiederkehrende Aufgabe kann nicht wieder geöffnet werden – ihr nächstes Vorkommen wurde geändert.",
       importTodoist: "Aus Todoist importieren (CSV)",
-      todoistConfirm: "{n} Aufgaben werden hinzugefügt, {m} Zeilen übersprungen (Abschnitte, Notizen, nicht unterstützte Datums-/Wiederholungsformate). Fortfahren?",
+      todoistConfirm: "{n} Aufgaben werden hinzugefügt, {m} Zeilen übersprungen (Abschnitte, Notizen) und {d} Fälligkeitsdatum/-termine ausgelassen (nicht unterstützte Formate). Fortfahren?",
       todoistDone: "{n} Aufgaben aus Todoist importiert.",
       todoistInvalid: "Diese Datei ist kein gültiger Todoist-CSV-Export."
     },
@@ -470,7 +470,7 @@
       dueTomorrow: "amanhã",
       toastReopenBlocked: "Esta tarefa recorrente não pode ser reaberta: sua próxima ocorrência foi alterada.",
       importTodoist: "Importar do Todoist (CSV)",
-      todoistConfirm: "{n} tarefas serão adicionadas e {m} linhas ignoradas (seções, notas, formatos de data ou repetição não suportados). Continuar?",
+      todoistConfirm: "{n} tarefas serão adicionadas, {m} linhas ignoradas (seções, notas) e {d} data(s) de vencimento omitida(s) (formatos não suportados). Continuar?",
       todoistDone: "{n} tarefas importadas do Todoist.",
       todoistInvalid: "Este arquivo não é uma exportação CSV válida do Todoist."
     },
@@ -541,13 +541,13 @@
       /* --- v3.2: tekrarlayan görevler, Todoist içe aktarma --- */
       repeatNone: "Senza ripetizione",
       repeatDaily: "Si ripete ogni giorno",
-      repeatWeekdays: "Si ripette nei giorni feriali",
-      repeatWeekly: "Si ripette ogni settimana",
+      repeatWeekdays: "Si ripete nei giorni feriali",
+      repeatWeekly: "Si ripete ogni settimana",
       dueToday: "oggi",
       dueTomorrow: "domani",
       toastReopenBlocked: "Questa attività ricorrente non può essere riaperta: la sua prossima occorrenza è stata modificata.",
       importTodoist: "Importa da Todoist (CSV)",
-      todoistConfirm: "Verranno aggiunte {n} attività e saltate {m} righe (sezioni, note, formati di data o ripetizione non supportati). Continuare?",
+      todoistConfirm: "Verranno aggiunte {n} attività, saltate {m} righe (sezioni, note) e omesse {d} date di scadenza (formati non supportati). Continuare?",
       todoistDone: "{n} attività importate da Todoist.",
       todoistInvalid: "Questo file non è un'esportazione CSV Todoist valida."
     },
@@ -624,7 +624,7 @@
       dueTomorrow: "कल",
       toastReopenBlocked: "यह आवर्ती कार्य फिर से नहीं खोला जा सकता — इसकी अगली पुनरावृत्ति बदल दी गई है।",
       importTodoist: "Todoist से आयात करें (CSV)",
-      todoistConfirm: "{n} कार्य जोड़े जाएँगे और {m} पंक्तियाँ छोड़ी जाएँगी (सेक्शन, नोट्स, असमर्थित तिथि/दोहराव प्रारूप)। जारी रखें?",
+      todoistConfirm: "{n} कार्य जोड़े जाएँगे, {m} पंक्तियाँ छोड़ी जाएँगी (सेक्शन, नोट्स) और {d} तिथियाँ छोड़ी जाएँगी (असमर्थित प्रारूप)। जारी रखें?",
       todoistDone: "Todoist से {n} कार्य आयात किए गए।",
       todoistInvalid: "यह फ़ाइल मान्य Todoist CSV निर्यात नहीं है।"
     },
@@ -701,7 +701,7 @@
       dueTomorrow: "غدًا",
       toastReopenBlocked: "لا يمكن إعادة فتح هذه المهمة المتكررة — تم تعديل تكرارها التالي.",
       importTodoist: "استيراد من Todoist (CSV)",
-      todoistConfirm: "سيتم إضافة {n} مهمة وتخطي {m} صفًا (أقسام، ملاحظات، تنسيقات تاريخ أو تكرار غير مدعومة). هل تريد المتابعة؟",
+      todoistConfirm: "سيتم إضافة {n} مهمة، وتخطي {m} صفًا (أقسام، ملاحظات)، وحذف {d} تاريخ استحقاق (تنسيقات غير مدعومة). هل تريد المتابعة؟",
       todoistDone: "تم استيراد {n} مهمة من Todoist.",
       todoistInvalid: "هذا الملف ليس تصدير CSV صالحًا من Todoist."
     },
@@ -778,7 +778,7 @@
       dueTomorrow: "明天",
       toastReopenBlocked: "此重复任务无法重新打开——它的下一次重复已被修改。",
       importTodoist: "从 Todoist 导入 (CSV)",
-      todoistConfirm: "将添加 {n} 个任务并跳过 {m} 行（分区、备注、不支持的日期或重复格式）。继续吗？",
+      todoistConfirm: "将添加 {n} 个任务，跳过 {m} 行（分区、备注），并省略 {d} 个截止日期（不支持的格式）。继续吗？",
       todoistDone: "已从 Todoist 导入 {n} 个任务。",
       todoistInvalid: "此文件不是有效的 Todoist CSV 导出文件。"
     },
@@ -855,7 +855,7 @@
       dueTomorrow: "明日",
       toastReopenBlocked: "この繰り返しタスクは再開できません — 次回の繰り返しが変更されました。",
       importTodoist: "Todoist からインポート (CSV)",
-      todoistConfirm: "{n} 件のタスクを追加し、{m} 行をスキップします（セクション、メモ、未対応の日付・繰り返し形式）。続けますか？",
+      todoistConfirm: "{n} 件のタスクを追加し、{m} 行をスキップし（セクション、メモ）、{d} 件の期日を省略します（未対応の形式）。続けますか？",
       todoistDone: "Todoist から {n} 件のタスクをインポートしました。",
       todoistInvalid: "このファイルは有効な Todoist の CSV エクスポートではありません。"
     },
@@ -932,7 +932,7 @@
       dueTomorrow: "завтра",
       toastReopenBlocked: "Эту повторяющуюся задачу нельзя открыть заново — её следующее повторение было изменено.",
       importTodoist: "Импорт из Todoist (CSV)",
-      todoistConfirm: "Будет добавлено задач: {n}, пропущено строк: {m} (разделы, заметки, неподдерживаемые форматы дат или повторов). Продолжить?",
+      todoistConfirm: "Будет добавлено задач: {n}, пропущено строк: {m} (разделы, заметки) и опущено дат: {d} (неподдерживаемые форматы). Продолжить?",
       todoistDone: "Из Todoist импортировано задач: {n}.",
       todoistInvalid: "Этот файл не является корректным CSV-экспортом Todoist."
     }

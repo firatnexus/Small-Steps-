@@ -177,6 +177,12 @@
       const parent = byId.get(task.parentId);
       if (!parent || parent === task || parent.parentId) task.parentId = null;
     }
+    // Tekrarlayan görevler yalnız başına çalışır: alt görevi olan bir görevin
+    // tekrarı olmaz (içe aktarılan eski/uyumsuz verilerde de bu kural uygulanır).
+    const cocuklari = new Set(out.filter(t => t.parentId).map(t => t.parentId));
+    for (const task of out) {
+      if (task.repeat && cocuklari.has(task.id)) task.repeat = null;
+    }
     return out;
   }
 
@@ -438,6 +444,7 @@
   const REPEAT_CYCLE = [null, "daily", "weekdays", "weekly"];
 
   function spawnSuccessor(task) {
+    if (childrenOf(task.id).length) return; // savunma: alt görevlisi görev tekrarlamaz
     let base = todayKey();
     if (task.dueAt && task.dueAt > base) base = task.dueAt; // erken tamamlama
     state.tasks.push({
@@ -451,10 +458,16 @@
 
   function despawnSuccessor(task) {
     const idx = state.tasks.findIndex(t => t.respawnedFrom === task.id);
-    if (idx === -1) return true; // doğacak yok: eski veri, geri açmaya izin ver
+    if (idx === -1) {
+      // Yeni occurrence silinmiş (kullanıcı sildi) veya v3.2 öncesi veri.
+      // v3.2 öncesi veride tekrar alanı zaten olamaz; silinmiş occurrence ise
+      // kullanıcının açık tercihi olduğundan geri açmaya izin verilir.
+      return true;
+    }
     const s = state.tasks[idx];
     const untouched = !s.done && s.text === task.text &&
       s.priority === task.priority && (s.focus || 0) === 0 &&
+      s.repeat === task.repeat &&
       childrenOf(s.id).length === 0;
     if (!untouched) return false;
     state.tasks.splice(idx, 1);
@@ -498,10 +511,11 @@
         }
         task.done = false;
         task.doneAt = null;
-        if (wasDoneAt && todayKey(new Date(wasDoneAt)) === todayKey() && !task.parentId) {
-          // geri alma: aynı gün tamamlanmışsa sayıyı geri al (yalnız üst seviye)
-          const day = todayKey();
-          if ((history[day]?.done || 0) > 0) recordHistory(day, "done", -1);
+        if (wasDoneAt && !task.parentId) {
+          // Geri alma: sayaç, tamamlanınca yazılan GÜNE geri alınır — bugüne değil.
+          // (Dün tamamlanıp bugün geri açılırsa dünün sayacı düşer.)
+          const gun = todayKey(new Date(wasDoneAt));
+          if ((history[gun]?.done || 0) > 0) recordHistory(gun, "done", -1);
         }
       } else {
         // durum zaten eşleşiyordur (tekrar tıklamalar): sadece eşitle
@@ -583,8 +597,10 @@
       makeIconButton(t("taskAriaDelete"), "🗑️", "danger", () => removeTask(task))
     );
 
-    // Alt görev ekleme düğmesi yalnızca üst seviye görevlerde (tek seviye derinlik)
-    if (!task.parentId) {
+    // Alt görev ekleme düğmesi yalnızca üst seviye VE tekrarsız görevlerde.
+    // Tekrarlayan görev başına çalışır — iki kontrol birbirini dışlar (↻ da
+    // alt görevlisi görevlerde gizlidir). Tekrar isteyen önce alt görevleri bitirir.
+    if (!task.parentId && !task.repeat) {
       actions.insertBefore(
         makeIconButton(t("subtaskAdd"), "＋", "subtask-btn", () => startSubtaskAdd(item, task)),
         actions.lastElementChild
@@ -967,8 +983,18 @@
         field += ch;
       }
     }
+    if (inQuotes) throw new Error("kapanmamış tırnak"); // bozuk CSV: reddet
     if (field !== "" || row.length) { row.push(field); rows.push(row); }
     return rows;
+  }
+
+  /* YYYY-MM-DD biçimi VE gerçek bir takvim günü mü? (2026-13-45 gibi imkânsız
+     tarihler reddedilir — Date'a UTC ayrıştırması yapılmadan yerel kontrol.) */
+  function isValidDateKey(s) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+    const [y, m, d] = s.split("-").map(Number);
+    const dt = new Date(y, m - 1, d);
+    return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
   }
 
   function importTodoistCsv(file) {
@@ -988,18 +1014,23 @@
         const get = (r, col) => col in cols ? String(r[cols[col]] ?? "").trim() : "";
 
         const tasks = [];
-        let skipped = 0, lastTop = null;
+        let skipped = 0, datesOmitted = 0, lastTop = null;
         for (let i = headerIdx + 1; i < rows.length; i++) {
           const r = rows[i];
           if (!r.length || r.every(c => !String(c).trim())) continue;
-          if (get(r, "TYPE").toLowerCase() !== "task") { skipped++; continue; }
+          const type = get(r, "TYPE").toLowerCase();
+          if (type === "section") { skipped++; lastTop = null; continue; } // bölüm: ebeveyn hafızası sıfırlanır
+          if (type !== "task") { skipped++; continue; }
           const text = get(r, "CONTENT").slice(0, 120);
           if (!text) { skipped++; continue; }
           const prioRaw = parseInt(get(r, "PRIORITY"), 10);
           const priority = (prioRaw >= 1 && prioRaw <= 4) ? 4 - prioRaw : 0; // 1→3 … 4→0
           const dateRaw = get(r, "DATE");
           const iso = /^(\d{4}-\d{2}-\d{2})/.exec(dateRaw);
-          const dueAt = iso ? iso[1] : null;
+          // Yalnız geçerli takvim tarihleri aktarılır; doğal dil/ifade tarihleri
+          // atlanır ve ayrı sayılır (satır değil, yalnız tarih atlanır)
+          const dueAt = iso && isValidDateKey(iso[1]) ? iso[1] : null;
+          if (dateRaw && !dueAt) datesOmitted++;
           const indent = parseInt(get(r, "INDENT"), 10) || 1;
           const task = {
             id: uid(), text, done: false, createdAt: Date.now(), doneAt: null,
@@ -1011,7 +1042,7 @@
           tasks.push(task);
         }
         if (!tasks.length) { showToast(t("todoistInvalid")); return; }
-        if (!window.confirm(t("todoistConfirm", { n: tasks.length, m: skipped }))) return;
+        if (!window.confirm(t("todoistConfirm", { n: tasks.length, m: skipped, d: datesOmitted }))) return;
         state.tasks.push(...tasks);
         save(); renderTasks();
         showToast(t("todoistDone", { n: tasks.length }));
