@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.3.5 — 2026-10-21
+
+The splash screen now also plays when the installed app is resumed from the background.
+
+### Fixed
+
+- **Splash on installed-app resume:** when the app is reopened from the background without a page reload (the OS resumed the existing document), nothing showed — the splash only played on loads. In standalone (installed app) mode, returning to the foreground now replays the same branded splash. It is a pure overlay: the running timer, typed drafts and all app state are untouched. Ordinary browser tab switches do not trigger it — only installed-app resumes do.
+- Combined with 3.3.4, the splash now covers both ways the installed app can open: a fresh/hidden document load (cold start) and a resume from memory.
+
 ## 3.3.4 — 2026-10-21
 
 The splash screen now also shows when the installed app is launched from the home screen.

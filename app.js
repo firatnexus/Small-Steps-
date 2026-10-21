@@ -1795,10 +1795,13 @@
        kalır ve ekran kullanıcı görmeden solup giderdi. */
     const splashEl = document.getElementById("splash");
     if (splashEl) {
-      const beginSplash = () => {
+      const splashTemplate = splashEl.cloneNode(true);
+      const playSplash = () => {
+        const node = document.getElementById("splash") ||
+                     document.body.appendChild(splashTemplate.cloneNode(true));
         /* Belge gizli yüklenmişse CSS giriş animasyonları arka planda
            bitmiş olabilir; görünür olunca bir kez daha oynat. */
-        splashEl.querySelectorAll(".splash-sprout, .splash-name, .splash-tag")
+        node.querySelectorAll(".splash-sprout, .splash-name, .splash-tag")
           .forEach((el) => {
             el.style.animation = "none";
             void el.offsetHeight; /* reflow: animasyonu sıfırla */
@@ -1807,19 +1810,32 @@
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
             setTimeout(() => {
-              splashEl.classList.add("splash-hide");
-              setTimeout(() => splashEl.remove(), 600);
+              node.classList.add("splash-hide");
+              setTimeout(() => node.remove(), 600);
             }, 550);
           });
         });
       };
       if (document.visibilityState === "visible") {
-        beginSplash();
+        playSplash();
       } else {
         document.addEventListener("visibilitychange", () => {
-          if (document.visibilityState === "visible") beginSplash();
+          if (document.visibilityState === "visible") playSplash();
         }, { once: true });
       }
+      /* Kurulu uygulama arka plandan HATIRLANINCA (belge yeniden
+         yüklenmeden dönerse) açılış ekranı yeniden oynatılır — yalnızca
+         kurulu uygulama kipinde (standalone); normal tarayıcıda sekme
+         değiştirmek ekranı tetiklemez. Ekran yalnızca bir örtüdür:
+         zamanlayıcıyı, taslakları ve uygulama durumunu değiştirmez. */
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState !== "visible") return;
+        if (document.getElementById("splash")) return; /* zaten oynuyor */
+        if (window.matchMedia &&
+            window.matchMedia("(display-mode: standalone)").matches) {
+          playSplash();
+        }
+      });
     }
   }
 

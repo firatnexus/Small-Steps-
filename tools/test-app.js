@@ -1183,9 +1183,9 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       dom.window.close();
     });
 
-    await test("Hatırlanan belgede (gizlenip geri dönme) açılış ekranı tekrar oynamaz", async () => {
-      /* Kurulu uygulama arka plandan hatırlanırsa belge aynı kalır — yükleme
-         yoktur, ekran yeniden belirmemeli ve uygulama bozulmamalıdır. */
+    await test("Tarayıcıda hatırlanan belge (gizle-göster) açılış ekranını tekrar oynamaz", async () => {
+      /* Kurulu uygulama kipi DEĞİL: normal tarayıcıda sekme değiştirmek
+         yükleme olmadığından ekranı tetiklememelidir. */
       const dom = await launch();
       for (let i = 0; i < 30 && $(dom, "#splash"); i++) {
         await new Promise((r) => setTimeout(r, 100));
@@ -1202,8 +1202,55 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       visible = true;
       w.document.dispatchEvent(new w.Event("visibilitychange"));
       await new Promise((r) => setTimeout(r, 800));
-      eq($(dom, "#splash"), null, "hatırlanan belgede açılış ekranı yeniden belirdi");
+      eq($(dom, "#splash"), null, "tarayıcıda hatırlanan belgede açılış ekranı yeniden belirdi");
       assert(!!$(dom, "#lang-select"), "gizle-göster sonrası arayüz bozuldu");
+      dom.window.close();
+    });
+
+    await test("Kurulu uygulamada hatırlanınca ekran yeniden oynar; zamanlayıcı ve taslak korunur", async () => {
+      /* Kurulu uygulama kipinde (display-mode: standalone) belge arka
+         plandan hatırlanınca açılış ekranı yeniden oynamalı; ama yalnızca
+         örtüdür — çalışan oturum ve yazılan taslak bozulmamalıdır. */
+      const dom = new JSDOM(html, {
+        url: "https://smallsteps.test/",
+        runScripts: "outside-only",
+        pretendToBeVisual: true
+      });
+      const w = dom.window;
+      w.matchMedia = () => ({ matches: true }); /* kurulu uygulama kipi */
+      w.eval(translationsSrc);
+      w.eval(appSrc);
+      if (w.document.readyState === "loading") {
+        await new Promise((r) => w.document.addEventListener("DOMContentLoaded", r, { once: true }));
+      }
+      for (let i = 0; i < 30 && $(dom, "#splash"); i++) {
+        await new Promise((r) => setTimeout(r, 100));
+      }
+      eq($(dom, "#splash"), null, "ilk açılış ekranı kaldırılmadı");
+      const startPause = $(dom, "#start-pause");
+      startPause.click();
+      const pauseLabel = startPause.textContent;
+      const input = $(dom, "#task-input");
+      input.value = "taslak metin";
+      let visible = true;
+      Object.defineProperty(w.document, "visibilityState", {
+        get: () => (visible ? "visible" : "hidden"),
+        configurable: true
+      });
+      visible = false;
+      w.document.dispatchEvent(new w.Event("visibilitychange"));
+      visible = true;
+      w.document.dispatchEvent(new w.Event("visibilitychange"));
+      await new Promise((r) => setTimeout(r, 200));
+      assert(!!$(dom, "#splash") && !$(dom, "#splash").classList.contains("splash-hide"),
+        "hatırlanmada açılış ekranı yeniden oynamadı");
+      await new Promise((r) => setTimeout(r, 900));
+      assert($(dom, "#splash") && $(dom, "#splash").classList.contains("splash-hide"),
+        "hatırlanma ekranı soluklaşmadı");
+      await new Promise((r) => setTimeout(r, 700));
+      eq($(dom, "#splash"), null, "hatırlanma ekranı DOM'dan kaldırılmadı");
+      eq(startPause.textContent, pauseLabel, "zamanlayıcı durumu sıfırlandı (oturum kayboldu)");
+      eq(input.value, "taslak metin", "yazılan taslak kayboldu");
       dom.window.close();
     });
 
