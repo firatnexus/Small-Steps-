@@ -656,6 +656,9 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 #help-toggle { font-weight: 750; }
 
 /* ============ Orman (v3.3) ============ */
+/* [hidden] display:flex'e karşı açık garanti */
+.forest-empty[hidden] { display: none; }
+.forest-scene[hidden] { display: none; }
 .forest-card { margin-top: 18px; }
 .forest-sub { color: var(--muted); font-size: .85rem; margin: 0 0 12px; }
 .forest-sub strong, .forest-sub b { color: var(--green); font-weight: 700; }
@@ -669,9 +672,10 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 .forest-scene {
   border: 1px solid var(--line); border-radius: 14px; background: var(--field);
   padding: 14px 14px 10px; overflow-x: auto; scrollbar-width: thin;
+  scroll-behavior: smooth;
 }
 .forest-days { display: flex; gap: 8px; min-width: max-content; padding-bottom: 2px; }
-.day-cluster { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 26px; }
+.day-cluster { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 26px; padding-top: 13px; }
 .day-cluster.empty .day-trees { opacity: .4; }
 .day-cluster.empty .day-label { opacity: .55; }
 .day-trees { display: flex; align-items: flex-end; gap: 3px; height: 52px; }
@@ -683,7 +687,12 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
   content: ""; width: 7px; height: 7px; border-radius: 50%;
   background: var(--muted); opacity: .35; align-self: flex-end; margin-bottom: 2px;
 }
-.more-pill { font-size: .7rem; color: var(--muted); font-weight: 650; white-space: nowrap; }
+.more-pill {
+  position: absolute; top: -3px; left: 50%; transform: translateX(-50%);
+  font-size: .7rem; color: var(--muted); font-weight: 650; white-space: nowrap;
+  background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 0 6px;
+  line-height: 1.5;
+}
 .day-label { font-size: .66rem; color: var(--muted); font-weight: 650; text-transform: uppercase; letter-spacing: .04em; }
 .day-cluster.today .day-label { color: var(--green); }
 .forest-empty { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .92rem; }

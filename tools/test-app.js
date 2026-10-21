@@ -956,8 +956,8 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       assert(more && more.textContent.includes("2"), "+2 rozeti görünmeli");
     });
 
-    await test("Seri rozeti aktif günleri sayar (bugün aktif: seri 1)", () => {
-      eq($(dom, "#streak-count").textContent, "1");
+    await test("Seri rozeti aktif günleri sayar (bugün aktif: '1 day')", () => {
+      eq($(dom, "#streak-count").textContent, "1 day");
     });
 
     // Eski veri: sessions yok → boş durum, istatistikler korunur
@@ -970,9 +970,31 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       assert(!$(domL, "#forest-empty").hidden, "boş durum görünmeli");
       assert($(domL, "#forest-scene").hidden, "sahne gizlenmeli");
       eq($(domL, "#stat-focus-week").textContent, "55", "odak istatistiği bozuldu");
-      eq($(domL, "#streak-count").textContent, "1", "bugün aktif: seri 1 olmalı");
+      eq($(domL, "#streak-count").textContent, "1 day", "bugün aktif: seri 1 olmalı");
     });
     domL.window.close();
+
+    // Saati (takvimi de) ileri al: Date.now VE new Date() aynı kaynakta.
+    // Her çağrı mevcut saate +1 gün ekler (art arda gün geçişleri için).
+    const shiftClock = (dom, days = 1) => {
+      const w = dom.window;
+      const RealDate = w.Date;
+      const shift = days * 86400000;
+      w.Date = class extends RealDate {
+        constructor(...args) { super(...(args.length ? args : [RealDate.now() + shift])); }
+        static now() { return RealDate.now() + shift; }
+      };
+      w.Date.now = () => RealDate.now() + shift;
+    };
+    const addTask = (dom, text) => {
+      $(dom, "#task-input").value = text;
+      $(dom, "#task-form").dispatchEvent(new dom.window.Event("submit", { bubbles: true, cancelable: true }));
+    };
+    const completeByText = (dom, text) => {
+      const item = $$(dom, "#task-list .task").find(el => el.textContent.includes(text));
+      if (!item) throw new Error("görev bulunamadı: " + text);
+      item.querySelector('input[type="checkbox"]').click();
+    };
 
     // Seri 90 günlük pencereyi aşabilir: kuyruk mantığı
     const hist95 = {};
@@ -981,17 +1003,78 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
       hist95[todayKey(d)] = { focus: 25, done: 1, sessions: 1 };
     }
     const domS = await launch({
-      state: { tasks: [gorevY("s1")], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+      state: { tasks: [], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
       history: hist95
     });
     await test("Seri 90 günlük pencereyi aşabilir (kuyruk: 95 gün)", async () => {
-      // Bir görev tamamla → recordHistory → budama → kuyruk yazılır
-      $(domS, "#task-list .task:not(.subtask) input[type=checkbox]").click();
-      eq($(domS, "#streak-count").textContent, "95", "95 günlük seri bekleniyordu");
+      addTask(domS, "g1");
+      completeByText(domS, "g1");
+      eq($(domS, "#streak-count").textContent, "95 days", "95 günlük seri bekleniyordu");
       await settled(300); // save() debounce'u
       const st = readState(domS);
       eq(st.stats.streakTail, 5, "5 günlük kuyruk bekleniyordu");
+      assert(st.stats.streakTailEnd, "kuyruk tarih çapası yazılmadı");
       eq(st.stats.bestStreak, 95, "en uzun seri kaydı tutulmalı");
+    });
+
+    await test("Art arda budamalarda kuyruk gün gün büyür (96, 97 gün)", async () => {
+      // Gün +1: yeni görev → 96. gün, kuyruk 6
+      shiftClock(domS, 1);
+      addTask(domS, "g2");
+      completeByText(domS, "g2");
+      await settled(300);
+      let st = readState(domS);
+      eq(st.stats.streakTail, 6, "1. gün geçişinde kuyruk 6 olmalı");
+      eq($(domS, "#streak-count").textContent, "96 days", "96 günlük seri");
+
+      // Gün +1 daha: 97. gün, kuyruk 7
+      shiftClock(domS, 1);
+      addTask(domS, "g3");
+      completeByText(domS, "g3");
+      await settled(300);
+      st = readState(domS);
+      eq(st.stats.streakTail, 7, "2. gün geçişinde kuyruk 7 olmalı");
+      eq($(domS, "#streak-count").textContent, "97 days", "97 günlük seri");
+    });
+
+    await test("Son zamanlarda gün atlanırsa kuyruk seriye eklenmez", async () => {
+      // Saat +2'de (uygulamanın bugünü = gerçek bugün+2). Pencerenin ortasından
+      // bir günü sil → zincir kopar → seri yalnızca bugüne kadar; kuyruk görünmez.
+      const hIntact = readHistory(domS);
+      const h = { ...hIntact };
+      const kopuk = todayKey(new Date(Date.now() - 2 * 86400000)); // bugünden 2 gün önce
+      delete h[kopuk];
+      const st = readState(domS);
+      const domK = await launch({ state: st, history: h });
+      eq($(domK, "#streak-count").textContent, "2 days", "kırık zincir kuyruğu almalıydı");
+      eq(readState(domK).stats.streakTail, 7, "kuyruk kaydı korunur (görünmez)");
+      domK.window.close();
+
+      // Yeniden yükleme (saat aynı, geçmiş bütün): seri 97 dönmeli.
+      // Saat kaydırması render tetiklemez — bir görev tamamla → yeniden hesap.
+      const domW = await launch({ state: st, history: hIntact });
+      shiftClock(domW, 2);
+      addTask(domW, "w1");
+      completeByText(domW, "w1");
+      eq($(domW, "#streak-count").textContent, "97 days", "yeniden yükleme seriyi düşürdü");
+
+      // Yedek gidiş-dönüşü: kuyruk ve çapa taşınsın
+      $(domW, "#export-data").click();
+      const data = JSON.parse(domW.window.__lastBlob.__text);
+      eq(data.state.stats.streakTail, 7, "yedekte kuyruk yok");
+      assert(data.state.stats.streakTailEnd, "yedekte çapa yok");
+      const domX = await launch();
+      shiftClock(domX, 2);
+      const wX = domX.window;
+      wX.confirm = () => true;
+      const file = new wX.File([domW.window.__lastBlob.__text], "yedek.json", { type: "application/json" });
+      Object.defineProperty(wX.document.querySelector("#import-file"), "files", { value: [file] });
+      wX.document.querySelector("#import-file").dispatchEvent(new wX.Event("change"));
+      await settled(400);
+      eq(readState(domX).stats.streakTail, 7, "içe aktarımda kuyruk kayboldu");
+      eq($(domX, "#streak-count").textContent, "97 days", "içe aktarımda seri kayboldu");
+      domX.window.close();
+      domW.window.close();
     });
 
     await test("Kuyruktaki gün atlaması kuyruğu o günde keser", async () => {
@@ -1005,14 +1088,15 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
         hist[todayKey(d)] = { focus: 25, done: 1, sessions: 1 };
       }
       const domG = await launch({
-        state: { tasks: [gorevY("s1")], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
+        state: { tasks: [], settings: MIN_SETTINGS, stats: { date: todayKey(), focusMinutes: 0 }, filter: "all", search: "", activeTaskId: null },
         history: hist
       });
-      $(domG, "#task-list .task:not(.subtask) input[type=checkbox]").click();
+      addTask(domG, "g1");
+      completeByText(domG, "g1");
       await settled(300);
       const st = readState(domG);
       eq(st.stats.streakTail, 5, "5 günlük kuyruk bekleniyordu");
-      eq($(domG, "#streak-count").textContent, "95", "90 pencere + 5 kuyruk");
+      eq($(domG, "#streak-count").textContent, "95 days", "90 pencere + 5 kuyruk");
       domG.window.close();
     });
     domS.window.close();

@@ -199,7 +199,7 @@
   function loadState() {
     const fallback = {
       tasks: [], settings: { ...DEFAULT_SETTINGS },
-      stats: { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0 }, filter: "all",
+      stats: { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0, streakTailEnd: null }, filter: "all",
       search: "", activeTaskId: null
     };
 
@@ -235,7 +235,8 @@
         // Orman/seri sayaçları (v3.3) — eski yedeklerde yoktur, 0 başlar
         forestTotal: statOr(raw.stats?.forestTotal),
         bestStreak:  raw.stats?.bestStreak === undefined ? null : statOr(raw.stats?.bestStreak),
-        streakTail: statOr(raw.stats?.streakTail)
+        streakTail: statOr(raw.stats?.streakTail),
+        streakTailEnd: typeof raw.stats?.streakTailEnd === "string" ? raw.stats.streakTailEnd : null
       },
       filter: ["all", "active", "done"].includes(raw.filter) ? raw.filter : "all",
       search: typeof raw.search === "string" ? raw.search.slice(0, 80) : "",
@@ -308,22 +309,32 @@
     if (keys.length > 90) {
       const removed = keys.slice(0, keys.length - 90);
       const oldestKept = keys[keys.length - 90];
-      /* Seri kuyruğu: 90 günlük pencerenin dışına taşan günler,
-         pencereye bitişik ve kesintisiz aktifse sayılır — böylece
-         seri 90 günden uzun olabilir (kuyruk state'e yazılır). */
-      let tail = 0, prev = null;
+      /* Seri kuyruğu: 90 günlük pencerenin dışındaki kesintisiz aktif günler.
+         Birikmiş kuyruk tarih çapasıyla (streakTailEnd = kuyruğun en yeni günü)
+         taşınır: art arda budamalarda gün gün büyür, pencereye bitişik ve
+         kesintisiz değilse sıfırlanır. */
+      const prevTail = state.stats.streakTail || 0;
+      const prevEnd = state.stats.streakTailEnd || null;
+      const dayDiff = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+      let tail = 0, tailEnd = null;
       for (const k of removed) {
         const active = (history[k]?.focus || 0) > 0 || (history[k]?.done || 0) > 0;
-        // Kayıt yokluğu (eksik gün) veya pasiflik kuyruğu keser;
-        // kesintiden sonraki aktif gün yeni koşunun ilk günüdür
-        const contiguous = prev === null || Math.round((new Date(k) - new Date(prev)) / 86400000) === 1;
-        if (!contiguous) tail = 0;
+        // Önceki kuyruğun devamıysa birikmişi devral
+        if (tail === 0 && prevTail > 0 && prevEnd && dayDiff(prevEnd, k) === 1) {
+          tail = prevTail; tailEnd = prevEnd;
+        }
+        // Zincir koptuysa (arada pasif/eksik gün) sıfırla
+        if (tailEnd !== null && dayDiff(tailEnd, k) !== 1) tail = 0;
         tail = active ? tail + 1 : 0;
-        prev = k;
+        tailEnd = k;
       }
-      // Tutulan en eski gün aktif değilse kuyruk pencereye bağlı değildir
+      // Pencereye bitişiklik: kuyruğun son günü ile tutulan en eski gün
+      // ardışık VE tutulan gün aktif olmalı — yoksa kuyruk pencereye bağlı değildir
+      const lastRemoved = removed[removed.length - 1];
       const keptActive = (history[oldestKept]?.focus || 0) > 0 || (history[oldestKept]?.done || 0) > 0;
-      state.stats.streakTail = keptActive ? tail : 0;
+      if (!keptActive || dayDiff(lastRemoved, oldestKept) !== 1) tail = 0;
+      state.stats.streakTail = tail;
+      state.stats.streakTailEnd = tail > 0 ? lastRemoved : null;
 
       removed.forEach(k => delete history[k]);
     }
@@ -827,7 +838,7 @@
   }
 
   function calculateStreak() {
-    let streak = state.stats.streakTail || 0; // 90 günlük pencere öncesi kuyruk
+    let streak = 0;
     const now = new Date();
     for (let i = 0; i < 365; i++) {
       const d = new Date(now);
@@ -841,6 +852,10 @@
       else if (i === 0) continue;
       else break;
     }
+    // Kuyruk yalnızca geriye tarama penceredeki TÜM kayıtları sorunsuz
+    // geçtiyse eklenebilir: arada kopukluk varsa kuyruk bugünkü seriye ait değil
+    const retained = Object.keys(history).length;
+    if (retained > 0 && streak >= retained) streak += state.stats.streakTail || 0;
     return streak;
   }
 
@@ -1020,14 +1035,25 @@
     els.forestDays.replaceChildren(...clusters);
     els.forestDays.setAttribute("aria-label", t("forestAria", { count: treeTotal }));
 
-    // Boş durum: pencerede hiç ağaç yoksa filiz + açıklama
+    // Boş durum yalnız "hiç ağaç dikilmemişse": dikilmiş ama pencerede
+    // oturum yoksa (ör. 2 hafta ara vermişse) sahne + toplam gösterilir
     const isEmpty = treeTotal === 0 && (state.stats.forestTotal || 0) === 0;
     els.forestScene.hidden = isEmpty;
     els.forestEmpty.hidden = !isEmpty;
 
-    els.streakCount.textContent = String(streak);
+    // Seri rozeti: rakam + yerelleştirilmiş gün etiketi (mobilde de anlaşılır)
+    els.streakCount.textContent = streak === 1 ? t("streakDay1", { n: 1 }) : t("streakDays", { n: streak });
     els.streakBadge.title = t("statStreak");
-    els.forestSub.textContent = t("forestSub", { best: state.stats.bestStreak || 0 });
+    els.forestSub.textContent = t("forestSub", {
+      total: state.stats.forestTotal || 0,
+      best: state.stats.bestStreak || 0
+    });
+
+    // Mobilde bugünün ağaçları görünsün: taşma varsa bugüne kaydır
+    const todayCluster = els.forestDays.querySelector(".day-cluster.today");
+    if (todayCluster && els.forestScene.scrollWidth > els.forestScene.clientWidth) {
+      todayCluster.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
   }
 
   /* ---------- 90 günlük ısı haritası ---------- */
@@ -1263,8 +1289,9 @@
         state.stats.forestTotal = statOr(st.stats.forestTotal);
         state.stats.bestStreak  = statOr(st.stats.bestStreak);
         state.stats.streakTail = statOr(st.stats.streakTail);
+        state.stats.streakTailEnd = typeof st.stats.streakTailEnd === "string" ? st.stats.streakTailEnd : null;
       } else {
-        state.stats = { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0 };
+        state.stats = { date: todayKey(), focusMinutes: 0, forestTotal: 0, bestStreak: 0, streakTail: 0, streakTailEnd: null };
       }
 
       // Zamanlayıcıyı yeni sürelerle eşitle
