@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.4.0 — 2026-10-22
+
+Android app + GitHub star badge. The repository is renamed to `small-steps` (old links redirect).
+
+### Added
+
+- **Android APK:** the web app is now also packaged as a native Android app (Capacitor). Signed APKs are attached to GitHub releases; the web PWA is unchanged. On mobile, the keyboard-shortcut `?` button is hidden (shortcuts need a keyboard) and the star badge takes its place. The two installs are separate — data does not sync between web and APK.
+- **GitHub star badge:** the top bar now shows the repository's live star count, styled exactly like GitHub's own badge (logo + count + star icon). The count is fetched from the GitHub API, cached for 6 hours, and hidden (not shown as 0) when offline. Tapping the badge opens the repository — in the web build in a new tab, on Android in the system browser.
+- Repository renamed `Small-Steps-` → `small-steps`; GitHub redirects old links.
+
+
 ## 3.3.5 — 2026-10-21
 
 The splash screen now also plays when the installed app is resumed from the background.

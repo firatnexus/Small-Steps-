@@ -147,3 +147,6 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Capacitor web varlık kopyası (scripts/build-app.mjs üretir)
+www/

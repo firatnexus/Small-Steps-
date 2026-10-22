@@ -14,6 +14,7 @@
   const TRANSLATIONS = {
     en: {
       name: "English", langLabel: "Language", themeToggle: "Toggle theme",
+      ghStars: "Star on GitHub",
       eyebrow: "Find your own pace", title: "Small Steps 🌱",
       intro: "Break big things into smaller steps. Choose a few things for today, focus on one, and leave yourself room to breathe.",
       tasksHeading: "What would you like to do today?",
@@ -94,6 +95,7 @@
     },
     tr: {
       name: "Türkçe", langLabel: "Dil", themeToggle: "Temayı değiştir",
+      ghStars: "GitHub'da yıldız ver",
       eyebrow: "Kendi temponu bul", title: "Minik Adımlar 🌱",
       intro: "Büyük işleri küçült. Bugün için birkaç şey seç, bir tanesine odaklan ve kendine nefes alacak zaman bırak.",
       tasksHeading: "Bugün neler yapmak istersin?",
@@ -174,6 +176,7 @@
     },
     es: {
       name: "Español", langLabel: "Idioma", themeToggle: "Cambiar tema",
+      ghStars: "Dar una estrella en GitHub",
       eyebrow: "Encuentra tu propio ritmo", title: "Pequeños pasos 🌱",
       intro: "Divide las grandes tareas en pasos pequeños. Elige algunas para hoy, concéntrate en una y deja espacio para respirar.",
       tasksHeading: "¿Qué te gustaría hacer hoy?",
@@ -254,6 +257,7 @@
     },
     fr: {
       name: "Français", langLabel: "Langue", themeToggle: "Changer de thème",
+      ghStars: "Mettre une étoile sur GitHub",
       eyebrow: "Trouvez votre rythme", title: "Petits pas 🌱",
       intro: "Divisez les grandes tâches en petites étapes. Choisissez quelques objectifs pour aujourd'hui, concentrez-vous sur l'un d'eux et prenez le temps de souffler.",
       tasksHeading: "Que souhaitez-vous faire aujourd'hui ?",
@@ -334,6 +338,7 @@
     },
     de: {
       name: "Deutsch", langLabel: "Sprache", themeToggle: "Design wechseln",
+      ghStars: "Auf GitHub einen Stern geben",
       eyebrow: "Finde deinen eigenen Rhythmus", title: "Kleine Schritte 🌱",
       intro: "Teile große Aufgaben in kleine Schritte auf. Wähle ein paar Dinge für heute, konzentriere dich auf eine Sache und gönn dir Pausen.",
       tasksHeading: "Was möchtest du heute erledigen?",
@@ -414,6 +419,7 @@
     },
     pt: {
       name: "Português", langLabel: "Idioma", themeToggle: "Alternar tema",
+      ghStars: "Dar uma estrela no GitHub",
       eyebrow: "Encontre o seu ritmo", title: "Pequenos passos 🌱",
       intro: "Divida tarefas grandes em passos menores. Escolha algumas para hoje, concentre-se numa delas e reserve um tempo para respirar.",
       tasksHeading: "O que gostaria de fazer hoje?",
@@ -494,6 +500,7 @@
     },
     it: {
       name: "Italiano", langLabel: "Lingua", themeToggle: "Cambia tema",
+      ghStars: "Metti una stella su GitHub",
       eyebrow: "Trova il tuo ritmo", title: "Piccoli passi 🌱",
       intro: "Dividi le attività più grandi in piccoli passi. Scegli cosa fare oggi, concentrati su una cosa e concediti il tempo di respirare.",
       tasksHeading: "Cosa vuoi fare oggi?",
@@ -574,6 +581,7 @@
     },
     hi: {
       name: "हिन्दी", langLabel: "भाषा", themeToggle: "थीम बदलें",
+      ghStars: "GitHub पर स्टार दें",
       eyebrow: "अपनी गति चुनें", title: "छोटे कदम 🌱",
       intro: "बड़े कामों को छोटे कदमों में बाँटें। आज के लिए कुछ काम चुनें, एक पर ध्यान दें और थोड़ा आराम भी करें।",
       tasksHeading: "आज आप क्या करना चाहेंगे?",
@@ -654,6 +662,7 @@
     },
     ar: {
       name: "العربية", langLabel: "اللغة", themeToggle: "تبديل المظهر",
+      ghStars: "أضف نجمة على GitHub",
       eyebrow: "اختر وتيرتك الخاصة", title: "خطوات صغيرة 🌱",
       intro: "قسّم المهام الكبيرة إلى خطوات صغيرة. اختر بعض المهام لليوم، وركّز على واحدة، واترك وقتًا للراحة.",
       tasksHeading: "ماذا تريد أن تنجز اليوم؟",
@@ -734,6 +743,7 @@
     },
     zh: {
       name: "中文", langLabel: "语言", themeToggle: "切换主题",
+      ghStars: "在 GitHub 上加星",
       eyebrow: "找到自己的节奏", title: "小步前进 🌱",
       intro: "把大任务拆成小步骤。选几件今天要做的事，专注完成一件，也别忘了留点时间休息。",
       tasksHeading: "今天想做些什么？",
@@ -814,6 +824,7 @@
     },
     ja: {
       name: "日本語", langLabel: "言語", themeToggle: "テーマを切り替え",
+      ghStars: "GitHub でスターを付ける",
       eyebrow: "自分のペースで", title: "小さな一歩 🌱",
       intro: "大きな作業を小さなステップに分けましょう。今日やることを選び、一つに集中して、休む時間も大切に。",
       tasksHeading: "今日は何をしますか？",
@@ -894,6 +905,7 @@
     },
     ru: {
       name: "Русский", langLabel: "Язык", themeToggle: "Сменить тему",
+      ghStars: "Поставить звезду на GitHub",
       eyebrow: "Найдите свой ритм", title: "Маленькие шаги 🌱",
       intro: "Разделите большие задачи на небольшие шаги. Выберите несколько дел на сегодня, сосредоточьтесь на одном и найдите время для отдыха.",
       tasksHeading: "Что хотите сделать сегодня?",

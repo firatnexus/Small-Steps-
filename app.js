@@ -131,6 +131,9 @@
     // Kısayollar
     shortcutsDialog: $("#shortcuts-dialog"),
     shortcutsClose:  $("#shortcuts-close"),
+    // GitHub yıldız durumu
+    ghStar:      $("#gh-star"),
+    ghStarCount: $("#gh-star-count"),
     // İstatistik
     weekChart:   $("#week-chart"),
     weekBadge:   $("#week-badge"),
@@ -1588,6 +1591,70 @@
       // kart dışına tıklayınca kapat
       if (e.target === els.shortcutsDialog) closeShortcuts();
     });
+
+    /* ---------- GitHub yıldız durumu ----------
+       Rozet her yerde görünür; yıldız sayısı api.github.com'dan alınır,
+       6 saatliğine localStorage'a önbelleklenir. Çevrimdışıysa sayı gizlenir,
+       rozet yine de depoya bağlantı verir.
+       Mobil (Capacitor) sürümde klavye kısayolları anlamsız olduğundan
+       soru işareti düğmesi gizlenir; yıldız durumu onun yerini alır. */
+    const IS_NATIVE_APP =
+      typeof window !== "undefined" &&
+      !!window.Capacitor &&
+      (typeof window.Capacitor.isNativePlatform === "function"
+        ? window.Capacitor.isNativePlatform()
+        : true);
+    if (IS_NATIVE_APP && els.helpToggle) els.helpToggle.hidden = true;
+
+    /* Yıldız rozetine dokununca depo adresi açılır. Web'de bağlantı zaten
+       yeni sekmede açılır; mobilde WebView'in davranışı belirsiz olduğu için
+       sistem tarayıcısı (Browser eklentisi) üzerinden aç, olmazsa aynı pencerede
+       git — Android geri tuşu uygulamaya döndürür. */
+    if (els.ghStar) {
+      els.ghStar.addEventListener("click", (e) => {
+        if (!IS_NATIVE_APP) return; /* web: varsayılan <a> davranışı */
+        e.preventDefault();
+        const url = els.ghStar.getAttribute("href");
+        const browser = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+        if (browser && typeof browser.open === "function") {
+          browser.open({ url }).catch(() => { location.href = url; });
+        } else if (!window.open(url, "_blank")) {
+          location.href = url;
+        }
+      });
+    }
+
+    const GH_REPO = "firatnexus/small-steps";
+    const GH_CACHE_KEY = "ss.ghStars";
+    const GH_TTL = 6 * 60 * 60 * 1000; /* 6 saat */
+    const formatStars = (n) =>
+      typeof n !== "number" || !isFinite(n)
+        ? ""
+        : n < 1000
+          ? String(n)
+          : n < 10000
+            ? (n / 1000).toFixed(1).replace(/\.0$/, "") + "k"
+            : Math.round(n / 1000) + "k";
+    const renderGhCount = (n) => {
+      const text = formatStars(n);
+      if (els.ghStarCount) els.ghStarCount.textContent = text;
+    };
+    if (els.ghStar && typeof fetch === "function") {
+      let cached = null;
+      try { cached = JSON.parse(localStorage.getItem(GH_CACHE_KEY)); } catch { /* bozuk kayıt */ }
+      const fresh = cached && typeof cached.n === "number" && Date.now() - cached.t < GH_TTL;
+      if (fresh) renderGhCount(cached.n);
+      fetch(`https://api.github.com/repos/${GH_REPO}`, { headers: { Accept: "application/vnd.github+json" } })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (!d || typeof d.stargazers_count !== "number") return;
+          renderGhCount(d.stargazers_count);
+          try {
+            localStorage.setItem(GH_CACHE_KEY, JSON.stringify({ n: d.stargazers_count, t: Date.now() }));
+          } catch { /* depo dolu olabilir */ }
+        })
+        .catch(() => { /* çevrimdışı: önbellekteki değer kalır */ });
+    }
 
     els.exportData.addEventListener("click", exportBackup);
     els.exportCsv.addEventListener("click", exportTasksCsv);

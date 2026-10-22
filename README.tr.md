@@ -7,7 +7,8 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.2.0-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.4.0-267354?style=flat-square)](../../releases)
+[![Android APK](https://img.shields.io/badge/Android-APK-3ddc84?style=flat-square&logo=android&logoColor=white)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-kurulumu)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-diller)
@@ -16,7 +17,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 <br/>
 
-[![Try It Online](https://img.shields.io/badge/🌐%20Şimdi%20Dene-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+[![Try It Online](https://img.shields.io/badge/🌐%20Şimdi%20Dene-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/small-steps/)
 
 <br/>
 
@@ -80,6 +81,7 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 - 4 tema: açık, koyu, sepya, yüksek kontrast
 - Tam RTL desteği (Arapça) ve 12 dil
 - Klavye kısayolları (`?` kılavuzu gösterir), ekran okuyucu dostu
+- **GitHub yıldız rozeti** — üst çubukta, GitHub'ın kendi rozetiyle birebir aynı stilde canlı yıldız sayısı; dokununca depo adresi açılır
 
 ---
 
@@ -87,13 +89,13 @@ Sıfır bağımlılık · 12 dil · Kurulum yapılabilen PWA · Verilerin taray�
 
 ### 🌐 Çevrimiçi Dene
 
-**[firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)** — kurulum yok, kayıt yok.
+**[firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)** — kurulum yok, kayıt yok.
 
 ### 💻 Yerel
 
 ```bash
-git clone https://github.com/firatnexus/Small-Steps-.git
-cd Small-Steps-
+git clone https://github.com/firatnexus/small-steps.git
+cd small-steps
 # macOS
 open index.html
 # Linux
@@ -113,6 +115,16 @@ npx serve .
 - **Android / Chrome / Edge:** kurulum bandı veya ⋮ menüsü → *Uygulamayı yükle*
 - **iOS Safari:** Paylaş → *Ana Ekrana Ekle*
 - Kurulduktan sonra tamamen çevrimdışı çalışır
+
+### 📱 Android (APK)
+
+Aynı uygulama, Capacitor sarmalayıcısıyla native Android uygulaması olarak da paketlendi (tarayıcı gerekmez):
+
+- **İndirme:** [Sürümler](../../releases) sayfasından `small-steps-x.y.z.apk` dosyasını indir ve kur ("bilinmeyen kaynaklardan uygulama yükleme" izni bir kez istenir)
+- Aynı özellikler, aynı veri konumu, tamamen çevrimdışı çalışır
+- Web PWA ile APK ayrı kurulumlardır — aralarında veri senkronu yoktur
+- Mobil sürümde klavye kısayolu düğmesi (`?`) gizlenir (kısayollar klavye ister); yerine GitHub yıldız durumu gelir ve depoyu tarayıcında açar
+- **Kaynaktan derleme:** `npm ci && node scripts/build-app.mjs && npx cap sync android && cd android && ./gradlew assembleRelease` (CI, sürümleri depo sırlarıyla imzalar)
 
 ### ⌨️ Klavye Kısayolları
 

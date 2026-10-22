@@ -1,0 +1,77 @@
+name: Android APK
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Build web assets (www/)
+        run: node scripts/build-app.mjs
+
+      - name: Sync Capacitor
+        run: npx cap sync android
+
+      - name: Write keystore
+        env:
+          SS_KEYSTORE_BASE64: ${{ secrets.SS_KEYSTORE_BASE64 }}
+        run: echo "$SS_KEYSTORE_BASE64" | base64 -d > smallsteps.p12
+
+      - name: Build release APK
+        env:
+          SS_KEYSTORE_FILE: ${{ github.workspace }}/smallsteps.p12
+          SS_KEYSTORE_PASSWORD: ${{ secrets.SS_KEYSTORE_PASSWORD }}
+          SS_KEY_ALIAS: ${{ secrets.SS_KEY_ALIAS }}
+          SS_KEY_PASSWORD: ${{ secrets.SS_KEY_PASSWORD }}
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Package
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/app-release.apk "dist/small-steps-$VERSION.apk"
+          cd dist && sha256sum small-steps-*.apk > SHA256SUMS.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: small-steps-apk
+          path: dist/*
+
+      - name: Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --title "Small Steps $GITHUB_REF_NAME" --notes "Web sürümü: https://firatnexus.github.io/small-steps/ · Değişiklikler: CHANGELOG.md"
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --clobber

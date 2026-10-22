@@ -71,6 +71,23 @@ button, input, select { font: inherit; }
 }
 .icon-button:hover { background: var(--soft); }
 
+/* GitHub yıldız durumu — GitHub'ın kendi rozet stiliyle birebir aynı */
+.gh-star {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 36px; padding: 0 11px; flex-shrink: 0;
+  border: 1px solid #d1d9e0; border-radius: 6px;
+  background: #f6f8fa; color: #57606a;
+  font-size: 0.82rem; font-weight: 500; text-decoration: none;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.gh-star:hover { background: #eff2f5; color: #57606a; }
+.gh-count { font-variant-numeric: tabular-nums; }
+.gh-count:empty { display: none; }
+[data-theme="dark"] .gh-star { background: #212830; border-color: #3d444d; color: #9198a1; }
+[data-theme="dark"] .gh-star:hover { background: #262c36; }
+[data-theme="sepia"] .gh-star { background: #f3ead8; border-color: #d8c9a8; color: #6f6248; }
+[data-theme="sepia"] .gh-star:hover { background: #ece0c9; }
+
 header { margin-bottom: 24px; }
 .eyebrow {
   margin: 0 0 8px; color: var(--green);

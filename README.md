@@ -7,7 +7,8 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 <br/>
 
-[![Version](https://img.shields.io/badge/version-3.2.0-267354?style=flat-square)](../../releases)
+[![Version](https://img.shields.io/badge/version-3.4.0-267354?style=flat-square)](../../releases)
+[![Android APK](https://img.shields.io/badge/Android-APK-3ddc84?style=flat-square&logo=android&logoColor=white)](../../releases)
 [![CI](https://img.shields.io/badge/CI-passing-267354?style=flat-square)](../../actions)
 [![PWA](https://img.shields.io/badge/PWA-installable-5a0fc8?style=flat-square)](#-pwa-installation)
 [![Languages](https://img.shields.io/badge/languages-12-important?style=flat-square)](#-languages)
@@ -16,7 +17,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 <br/>
 
-[![Try It Online](https://img.shields.io/badge/🌐%20Try%20It%20Online-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/Small-Steps-/)
+[![Try It Online](https://img.shields.io/badge/🌐%20Try%20It%20Online-firatnexus.github.io-267354?style=for-the-badge)](https://firatnexus.github.io/small-steps/)
 
 <br/>
 
@@ -80,6 +81,7 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 - 4 themes: light, dark, sepia, high contrast
 - Full RTL support (Arabic) and 12 languages
 - Keyboard shortcuts (`?` shows the cheat sheet), screen-reader friendly
+- **GitHub star badge** in the top bar — the repo's live star count, styled exactly like GitHub's own badge; tapping it opens the repository
 
 ---
 
@@ -87,13 +89,13 @@ Zero dependencies · 12 languages · Installable PWA · Your data never leaves y
 
 ### 🌐 Try Online
 
-Open **[firatnexus.github.io/Small-Steps-](https://firatnexus.github.io/Small-Steps-/)** — no install, no signup.
+Open **[firatnexus.github.io/small-steps](https://firatnexus.github.io/small-steps/)** — no install, no signup.
 
 ### 💻 Local
 
 ```bash
-git clone https://github.com/firatnexus/Small-Steps-.git
-cd Small-Steps-
+git clone https://github.com/firatnexus/small-steps.git
+cd small-steps
 # macOS
 open index.html
 # Linux
@@ -113,6 +115,16 @@ npx serve .
 - **Android / Chrome / Edge:** install banner, or ⋮ menu → *Install app*
 - **iOS Safari:** Share → *Add to Home Screen*
 - Once installed, it works fully offline
+
+### 📱 Android (APK)
+
+The same app is packaged as a native Android app (Capacitor wrapper — no browser needed):
+
+- **Download:** grab `small-steps-x.y.z.apk` from [Releases](../../releases) and install it ("install unknown apps" permission is required once)
+- Same features, same data location, works fully offline
+- The web PWA and the APK are separate installs — data does not sync between them
+- On mobile the keyboard-shortcut `?` button is hidden (shortcuts need a keyboard); the GitHub star badge sits in its place and opens the repository in your browser
+- **Build from source:** `npm ci && node scripts/build-app.mjs && npx cap sync android && cd android && ./gradlew assembleRelease` (CI signs releases with repo secrets)
 
 ### ⌨️ Keyboard Shortcuts
 
@@ -141,6 +153,8 @@ app.js            — state, tasks, timer, stats, backup (IIFE, no framework)
 translations.js   — i18n engine + 12 dictionaries
 sw.js             — service worker (cache-first assets, network-first HTML)
 manifest.json     — PWA manifest
+capacitor.config.json + android/ — the Capacitor Android wrapper (APK)
+scripts/build-app.mjs — copies the web app into www/ for the APK build
 test.html         — browser test suite (i18n integrity)
 tools/            — CI scripts
 ```
