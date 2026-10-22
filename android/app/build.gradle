@@ -42,6 +42,16 @@ android {
     }
 }
 
+/* kotlin-stdlib 1.8, jdk7/jdk8 yapıları birleşti; eski jdk8 1.6.21'i
+   (androidx bağımlılıklarından geliyor) 1.8.22'ye zorlayarak "duplicate
+   class" çakışmasını çöz. */
+configurations.all {
+    resolutionStrategy {
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
+    }
+}
+
 repositories {
     flatDir{
         dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
