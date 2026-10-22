@@ -671,6 +671,9 @@ button, .chip, .icon-btn, .icon-button { touch-action: manipulation; }
 
 /* Yardım düğmesi */
 #help-toggle { font-weight: 750; }
+/* .icon-button'ın display:grid'ü UA'nın [hidden] kuralını ezediğinden
+   açık garanti — yoksa native (Capacitor) sürümde ? düğmesi gizlenmez */
+#help-toggle[hidden] { display: none; }
 
 /* ============ Orman (v3.3) ============ */
 /* [hidden] display:flex'e karşı açık garanti */

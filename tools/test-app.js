@@ -1306,6 +1306,56 @@ const settled = (ms = 250) => new Promise((r) => setTimeout(r, ms));
     });
   }
 
+  console.log("\n— GitHub yıldız rozeti ve native mod (v3.4.0) —");
+  {
+    await test("Yıldız rozeti üst çubukta ve doğru yapıda", async () => {
+      const dom = await launch();
+      const badge = $(dom, "#gh-star");
+      assert(badge, "rozet (#gh-star) yok");
+      assert(badge.querySelector("svg.gh-mark"), "GitHub logosu yok");
+      assert(badge.querySelector("#gh-star-count"), "sayı alanı yok");
+      assert(badge.querySelector("svg.gh-star-icon"), "yıldız ikonu yok");
+      assert((badge.getAttribute("href") || "").includes("github.com/firatnexus/small-steps"),
+        "rozet depoya bağlanmıyor");
+      assert($(dom, "#help-toggle"), "web'de ? düğmesi yok");
+    });
+
+    await test("Web modunda ? düğmesi görünür kalır", async () => {
+      const dom = await launch();
+      const help = $(dom, "#help-toggle");
+      assert(help, "#help-toggle yok");
+      assert(!help.hidden, "web'de ? düğmesi gizlenmiş olmamalı");
+    });
+
+    await test("Native (Capacitor) modunda ? düğmesi hidden alır", async () => {
+      const dom = new JSDOM(html, {
+        url: "https://smallsteps.test/",
+        runScripts: "outside-only",
+        pretendToBeVisual: true
+      });
+      const w = dom.window;
+      w.Capacitor = { isNativePlatform: () => true, Plugins: {} };
+      w.eval(translationsSrc);
+      w.eval(appSrc);
+      if (w.document.readyState === "loading") {
+        await new Promise((r) => w.document.addEventListener("DOMContentLoaded", r, { once: true }));
+      }
+      const help = $(dom, "#help-toggle");
+      assert(help, "#help-toggle yok");
+      assert(help.hidden, "native modda ? düğmesi hidden değil");
+    });
+
+    await test("hidden gerçekten görünmez yapar (CSS garantisi)", async () => {
+      /* .icon-button { display: grid } UA'nın [hidden] kuralını ezer;
+         bu yüzden açık garanti kuralı şart. */
+      const css = fs.readFileSync(path.join(root, "style.css"), "utf8");
+      assert(css.includes("#help-toggle[hidden] { display: none; }"),
+        "style.css'te #help-toggle[hidden] garantisi yok");
+      assert(/\.icon-button\s*{[^}]*display:\s*grid/.test(css),
+        ".icon-button artık display:grid değil — garanti kuralı gözden geçirilmeli");
+    });
+  }
+
   console.log(`\nSonuç: ${pass} geçti, ${fail} başarısız`);
   process.exit(fail ? 1 : 0);
 })().catch((err) => {
